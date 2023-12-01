@@ -3,6 +3,7 @@
 #include <hardware_interface/hardware_info.hpp>
 #include <hardware_interface/types/hardware_interface_return_values.hpp>
 #include <unitree_z1_hw_interface/unitree_z1_hw_interface.hpp>
+#include <unitree_arm_sdk/control/unitreeArm.h>
 
 using unitree::z1::hw_interface::UnitreeZ1HWInterface;
 
@@ -27,6 +28,18 @@ UnitreeZ1HWInterface::~UnitreeZ1HWInterface() {
 // |  _ <| |___| |__| |___|  __/|  __/  | |___| |  _|  __/ |__| |_| | (__| |  __/
 // |_| \_\\____|_____\____|_|   |_|     |_____|_|_|  \___|\____\__, |\___|_|\___|
 //                                                             |___/
+/**
+ * According to ROS2 lifecycle documentation, the state is regarded as a finite state
+ * machine with the following states:
+ *   - unconfigured
+ *   - inactive
+ *   - active
+ *   - finalized
+ *
+ * The following are the transition functions that are called when the state changes.
+ *
+ */
+
 hardware_interface::CallbackReturn UnitreeZ1HWInterface::on_configure(
         const rclcpp_lifecycle::State& prev_state) {
     // TODO
