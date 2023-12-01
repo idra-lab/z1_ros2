@@ -13,9 +13,13 @@ using unitree::z1::hw_interface::UnitreeZ1HWInterface;
 //  \____\___/|_| |_|___/\__|_|   \__,_|\___|\__\___/|_|  |___/
 //
 
-UnitreeZ1HWInterface::UnitreeZ1HWInterface() {}
+UnitreeZ1HWInterface::UnitreeZ1HWInterface() {
+    // TODO
+}
 
-UnitreeZ1HWInterface::~UnitreeZ1HWInterface() {}
+UnitreeZ1HWInterface::~UnitreeZ1HWInterface() {
+    // TODO
+}
 
 //  ____   ____ _     ____ ____  ____    _     _  __       ____           _
 // |  _ \ / ___| |   / ___|  _ \|  _ \  | |   (_)/ _| ___ / ___|   _  ___| | ___
@@ -24,22 +28,34 @@ UnitreeZ1HWInterface::~UnitreeZ1HWInterface() {}
 // |_| \_\\____|_____\____|_|   |_|     |_____|_|_|  \___|\____\__, |\___|_|\___|
 //                                                             |___/
 hardware_interface::CallbackReturn UnitreeZ1HWInterface::on_configure(
-    const rclcpp_lifecycle::State& prev_state) {}
+        const rclcpp_lifecycle::State& prev_state) {
+    // TODO
+}
 
 hardware_interface::CallbackReturn UnitreeZ1HWInterface::on_cleanup(
-    const rclcpp_lifecycle::State& prev_state) {}
+        const rclcpp_lifecycle::State& prev_state) {
+    // TODO
+}
 
 hardware_interface::CallbackReturn UnitreeZ1HWInterface::on_shutdown(
-    const rclcpp_lifecycle::State& prev_state) {}
+        const rclcpp_lifecycle::State& prev_state) {
+    // TODO
+}
 
 hardware_interface::CallbackReturn UnitreeZ1HWInterface::on_activate(
-    const rclcpp_lifecycle::State& prev_state) {}
+        const rclcpp_lifecycle::State& prev_state) {
+    // TODO
+}
 
 hardware_interface::CallbackReturn UnitreeZ1HWInterface::on_deactivate(
-    const rclcpp_lifecycle::State& prev_state) {}
+        const rclcpp_lifecycle::State& prev_state) {
+    // TODO
+}
 
 hardware_interface::CallbackReturn UnitreeZ1HWInterface::on_error(
-    const rclcpp_lifecycle::State& prev_state) {}
+        const rclcpp_lifecycle::State& prev_state) {
+    // TODO
+}
 
 //  _   ___        __  ___       _             __
 // | | | \ \      / / |_ _|_ __ | |_ ___ _ __ / _| __ _  ___ ___
@@ -49,19 +65,29 @@ hardware_interface::CallbackReturn UnitreeZ1HWInterface::on_error(
 //
 
 hardware_interface::CallbackReturn UnitreeZ1HWInterface::on_init(
-    const hardware_interface::HardwareInfo& hw_info) {}
+        const hardware_interface::HardwareInfo& hw_info) {
+    // TODO
+}
 
 std::vector<hardware_interface::StateInterface>
-UnitreeZ1HWInterface::export_state_interfaces(){};
+UnitreeZ1HWInterface::export_state_interfaces(){
+        // TODO
+};
 
 std::vector<hardware_interface::CommandInterface>
-UnitreeZ1HWInterface::export_command_interfaces() {}
+UnitreeZ1HWInterface::export_command_interfaces() {
+    // TODO
+}
 
 hardware_interface::return_type UnitreeZ1HWInterface::read(
-    const rclcpp::Time& time, const rclcpp::Duration& period) {}
+        const rclcpp::Time& time, const rclcpp::Duration& period) {
+    // TODO
+}
 
 hardware_interface::return_type UnitreeZ1HWInterface::write(
-    const rclcpp::Time& time, const rclcpp::Duration& period) {}
+        const rclcpp::Time& time, const rclcpp::Duration& period) {
+    // TODO
+}
 
 //  ____       _            _
 // |  _ \ _ __(_)_   ____ _| |_ ___
