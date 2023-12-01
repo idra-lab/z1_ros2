@@ -33,10 +33,10 @@ BreakBeforeBraces: Attach
 BreakConstructorInitializers: AfterColon
 BreakInheritanceList: AfterComma
 BreakStringLiterals: True
-ColumnLimit: 90
+ColumnLimit: 88
 CompactNamespaces: False
 ConstructorInitializerIndentWidth: 8
-ContinuationIndentWidth: 4
+ContinuationIndentWidth: 8
 Cpp11BracedListStyle: True
 # EmptyLineAfterAccessModifier: Never
 # EmptyLineBeforAccessModifier: Always

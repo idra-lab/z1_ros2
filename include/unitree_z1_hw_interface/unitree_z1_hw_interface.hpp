@@ -38,38 +38,43 @@ namespace unitree {
                 ~UnitreeZ1HWInterface();
 
                 hardware_interface::CallbackReturn on_configure(
-                    const rclcpp_lifecycle::State& prev_state) override;
+                        const rclcpp_lifecycle::State& prev_state) override;
 
                 hardware_interface::CallbackReturn on_cleanup(
-                    const rclcpp_lifecycle::State& prev_state) override;
+                        const rclcpp_lifecycle::State& prev_state) override;
 
                 hardware_interface::CallbackReturn on_shutdown(
-                    const rclcpp_lifecycle::State& prev_state) override;
+                        const rclcpp_lifecycle::State& prev_state) override;
 
                 hardware_interface::CallbackReturn on_activate(
-                    const rclcpp_lifecycle::State& prev_state) override;
+                        const rclcpp_lifecycle::State& prev_state) override;
 
                 hardware_interface::CallbackReturn on_deactivate(
-                    const rclcpp_lifecycle::State& prev_state) override;
+                        const rclcpp_lifecycle::State& prev_state) override;
 
                 hardware_interface::CallbackReturn on_error(
-                    const rclcpp_lifecycle::State& prev_state) override;
+                        const rclcpp_lifecycle::State& prev_state) override;
 
                 hardware_interface::CallbackReturn on_init(
-                    const hardware_interface::HardwareInfo& hw_info) override;
+                        const hardware_interface::HardwareInfo& hw_info) override;
 
-                std::vector<hardware_interface::StateInterface> export_state_interfaces()
-                    override;
+                std::vector<hardware_interface::StateInterface>
+                export_state_interfaces() override;
 
                 std::vector<hardware_interface::CommandInterface>
 
                 export_command_interfaces() override;
 
                 hardware_interface::return_type read(
-                    const rclcpp::Time& time, const rclcpp::Duration& period) override;
+                        const rclcpp::Time&     time,
+                        const rclcpp::Duration& period) override;
 
                 hardware_interface::return_type write(
-                    const rclcpp::Time& time, const rclcpp::Duration& period) override;
+                        const rclcpp::Time&     time,
+                        const rclcpp::Duration& period) override;
+
+
+            private:
             };
 
 
