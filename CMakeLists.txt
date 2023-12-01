@@ -1,15 +1,22 @@
 cmake_minimum_required(VERSION 3.8)
 project(unitree_z1_hw_interface)
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
-find_package(ament_cmake REQUIRED)
-find_package(hardware_interface REQUIRED)
-find_package(pluginlib REQUIRED)
-find_package(rclcpp REQUIRED)
-find_package(rclcpp_lifecycle REQUIRED)
+set(ROS2_REQUIRED_COMPONENTS
+    hardware_interface
+    pluginlib
+    rclcpp
+    rclcpp_lifecycle
+    )
+
+foreach(COMPONENT ${ROS2_REQUIRED_COMPONENTS})
+    find_package(${COMPONENT} REQUIRED)
+endforeach()
 
 
 #  ____  ____  _  __  ____       _
@@ -42,7 +49,7 @@ set(UNITREE_Z1_HW_INTERFACE_SRCS
 add_library(
     ${PROJECT_NAME}
     SHARED
-    ${UNITREE_Z1_HW_INTERFACE_SRC}
+    ${UNITREE_Z1_HW_INTERFACE_SRCS}
     )
 target_include_directories(
     ${PROJECT_NAME}
@@ -56,7 +63,11 @@ target_link_libraries(
     PUBLIC
     ${UNITREE_Z1_SDK_LIB}
     )
-
+ament_target_dependencies(
+    ${PROJECT_NAME}
+    PUBLIC
+    ${ROS2_REQUIRED_COMPONENTS}
+    )
 
 
 if(BUILD_TESTING)
