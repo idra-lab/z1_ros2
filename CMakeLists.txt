@@ -97,7 +97,10 @@ install(
     DIRECTORY include/
     DESTINATION include
     )
-
+install(
+    DIRECTORY launch/ config/ urdf/ meshes/
+    DESTINATION share/${PROJECT_NAME}
+    )
 
 
 pluginlib_export_plugin_description_file(hardware_interface unitree_z1_hw_interface.xml)
