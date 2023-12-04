@@ -6,3 +6,5 @@ _build/
 *.iml
 *.ipr
 *.iws
+
+compile_commands.json
