@@ -5,7 +5,7 @@
     <xacro:arg name="prefix" default="" />
     <xacro:arg name="simulation_controllers" default="$(find unitree_z1_hw_interface)/config/z1_controllers.yaml" />
     <xacro:arg name="sim_ignition" default="true" />
-    <xacro:arg name="UnitreeGripper" default="true"/>
+    <xacro:arg name="with_gripper" default="true"/>
 
     <xacro:include filename="$(find unitree_z1_hw_interface)/urdf/const.xacro"/>
     <!-- <xacro:include filename="$(find unitree_z1_hw_interface)/urdf/gazebo.xacro"/> -->
@@ -14,7 +14,8 @@
     <xacro:z1_ros2_control
     name="z1"
     prefix="$(arg prefix)"
-    sim_ignition="$(arg sim_ignition)"/>
+    sim_ignition="$(arg sim_ignition)"
+    with_gripper="$(arg with_gripper)"/>
 
 
     <link name="world"/>
@@ -246,7 +247,7 @@
         </inertial>
     </link>
 
-    <xacro:if value="$(arg UnitreeGripper)">
+    <xacro:if value="$(arg with_gripper)">
         <joint name="gripperStator" type="fixed">
             <origin rpy="0 0 0" xyz="0.051 0.0 0.0"/>
             <parent link="link06"/>

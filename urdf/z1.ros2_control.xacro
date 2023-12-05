@@ -11,6 +11,7 @@
     name
     sim_ignition:=true
     prefix
+    with_gripper:=true
     ">
 
     <ros2_control name="${name}" type="system">
@@ -20,7 +21,7 @@
         </xacro:if>
         <xacro:unless value="${sim_ignition}">
           <plugin>unitree_z1_hw_interface/UnitreeZ1HWInterface</plugin>
-          <param name="gripper">true</param>
+          <param name="gripper">${with_gripper}</param>
           <!-- add other necessary parameters here -->
         </xacro:unless>
       </hardware>
@@ -132,6 +133,26 @@
         <state_interface name="velocity"/>
         <state_interface name="effort"/>
       </joint>
+
+      <xacro:if value="${with_gripper}">
+          <joint name="$(arg prefix)gripper">
+            <command_interface name="position">
+              <param name="min"> ${Gripper_PositionMin} </param>
+              <param name="max"> ${Gripper_PositionMax} </param>
+            </command_interface>
+            <command_interface name="velocity">
+              <param name="min"> -${velocityMax} </param>
+              <param name="max"> ${velocityMax} </param>
+            </command_interface>
+            <command_interface name="effort">
+              <param name="min"> -${torqueMax} </param>
+              <param name="max"> ${torqueMax} </param>
+            </command_interface>
+            <state_interface name="position"/>
+            <state_interface name="velocity"/>
+            <state_interface name="effort"/>
+          </joint>
+    </xacro:if>
 
 
     </ros2_control>

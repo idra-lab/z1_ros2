@@ -78,7 +78,7 @@ namespace unitree {
 
 
             private:
-                std::size_t n_joints;
+                bool with_gripper;
 
                 std::vector<double> rob_q;
                 std::vector<double> rob_dq;
@@ -87,6 +87,8 @@ namespace unitree {
                 std::vector<double> cmd_q;
                 std::vector<double> cmd_dq;
                 std::vector<double> cmd_tau;
+
+                std::size_t n_joints() const;
 
             };
 

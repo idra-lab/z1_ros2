@@ -157,14 +157,24 @@ hardware_interface::CallbackReturn UnitreeZ1HWInterface::on_init(
         RCLCPP_ERROR(Z1_HWI_LOGGER, "parent on_init() failed");
         return hardware_interface::CallbackReturn::ERROR;
     }
-    // TODO
+
+    std::string gripper_string = hw_info.hardware_parameters.at("gripper");
+    to_lower_string(gripper_string);
+    with_gripper = gripper_string == "true";
+    if(with_gripper){
+        RCLCPP_INFO(Z1_HWI_LOGGER, "Gripper is enabled");
+    }else{
+        RCLCPP_INFO(Z1_HWI_LOGGER, "Gripper is disabled");
+    }
     return hardware_interface::CallbackReturn::SUCCESS;
 }
 
 std::vector<hardware_interface::StateInterface>
 UnitreeZ1HWInterface::export_state_interfaces(){
     std::vector<hardware_interface::StateInterface> state_interfaces;
-    for (std::size_t i = 0; i < n_joints; i++) {
+    RCLCPP_INFO(Z1_HWI_LOGGER, "Exporting %lu state interfaces", n_joints());
+    for (std::size_t i = 0; i < n_joints(); i++) {
+        RCLCPP_INFO(Z1_HWI_LOGGER, "Exporting state interface for joint %s", info_.joints[i].name.c_str());
         state_interfaces.emplace_back(
                 info_.joints[i].name, hardware_interface::HW_IF_POSITION, &rob_q[i]);
         state_interfaces.emplace_back(
@@ -179,8 +189,10 @@ UnitreeZ1HWInterface::export_state_interfaces(){
 
 std::vector<hardware_interface::CommandInterface>
 UnitreeZ1HWInterface::export_command_interfaces() {
+    RCLCPP_INFO(Z1_HWI_LOGGER, "Exporting %lu command interfaces", n_joints());
     std::vector<hardware_interface::CommandInterface> command_interfaces;
-    for (std::size_t i = 0; i < n_joints; i++) {
+    for (std::size_t i = 0; i < n_joints(); i++) {
+        RCLCPP_INFO(Z1_HWI_LOGGER, "Exporting command interface for joint %s", info_.joints[i].name.c_str());
         command_interfaces.emplace_back(
                 info_.joints[i].name, hardware_interface::HW_IF_POSITION, &cmd_q[i]);
         command_interfaces.emplace_back(
@@ -209,6 +221,10 @@ hardware_interface::return_type UnitreeZ1HWInterface::write(
 // |  __/| |  | |\ V / (_| | ||  __/
 // |_|   |_|  |_| \_/ \__,_|\__\___|
 //
+
+std::size_t UnitreeZ1HWInterface::n_joints() const {
+    return with_gripper ? 7 : 6;
+}
 
 
 //  ____  _        _   _
