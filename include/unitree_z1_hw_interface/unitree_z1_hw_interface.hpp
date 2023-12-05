@@ -79,6 +79,7 @@ namespace unitree {
 
             private:
                 bool with_gripper;
+                void shutdown();
 
                 std::vector<double> rob_q;
                 std::vector<double> rob_dq;
