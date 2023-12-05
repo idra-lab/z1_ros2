@@ -78,6 +78,16 @@ namespace unitree {
 
 
             private:
+                std::size_t n_joints;
+
+                std::vector<double> rob_q;
+                std::vector<double> rob_dq;
+                std::vector<double> rob_ddq;
+                std::vector<double> rob_tau;
+                std::vector<double> cmd_q;
+                std::vector<double> cmd_dq;
+                std::vector<double> cmd_tau;
+
             };
 
 

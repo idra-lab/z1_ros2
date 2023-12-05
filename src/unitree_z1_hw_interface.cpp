@@ -10,6 +10,7 @@
 #include <hardware_interface/hardware_info.hpp>
 #include <hardware_interface/system_interface.hpp>
 #include <hardware_interface/types/hardware_interface_return_values.hpp>
+#include <hardware_interface/types/hardware_interface_type_values.hpp>
 #include <rclcpp/logging.hpp>
 #include <unitree_z1_hw_interface/unitree_z1_hw_interface.hpp>
 
@@ -64,7 +65,11 @@ UnitreeZ1HWInterface::~UnitreeZ1HWInterface() {
  * This function should setup the communication with the hardware.
  */
 hardware_interface::CallbackReturn UnitreeZ1HWInterface::on_configure(
-        const rclcpp_lifecycle::State& /* prev_state */) {
+        const rclcpp_lifecycle::State& prev_state){
+    if(hardware_interface::SystemInterface::on_configure(prev_state) != hardware_interface::CallbackReturn::SUCCESS){
+        RCLCPP_ERROR(Z1_HWI_LOGGER, "parent on_configure() failed");
+        return hardware_interface::CallbackReturn::ERROR;
+    }
     // TODO
     return hardware_interface::CallbackReturn::SUCCESS;
 }
@@ -75,6 +80,10 @@ hardware_interface::CallbackReturn UnitreeZ1HWInterface::on_configure(
  */
 hardware_interface::CallbackReturn UnitreeZ1HWInterface::on_cleanup(
         const rclcpp_lifecycle::State& prev_state) {
+    if(hardware_interface::SystemInterface::on_cleanup(prev_state) != hardware_interface::CallbackReturn::SUCCESS){
+        RCLCPP_ERROR(Z1_HWI_LOGGER, "parent on_cleanup() failed");
+        return hardware_interface::CallbackReturn::ERROR;
+    }
     // TODO
     return hardware_interface::CallbackReturn::SUCCESS;
 }
@@ -83,7 +92,11 @@ hardware_interface::CallbackReturn UnitreeZ1HWInterface::on_cleanup(
  * This function should shutdown the hardware.
  */
 hardware_interface::CallbackReturn UnitreeZ1HWInterface::on_shutdown(
-        const rclcpp_lifecycle::State& /* prev_state */) {
+        const rclcpp_lifecycle::State& prev_state){
+    if(hardware_interface::SystemInterface::on_shutdown(prev_state) != hardware_interface::CallbackReturn::SUCCESS){
+        RCLCPP_ERROR(Z1_HWI_LOGGER, "parent on_shutdown() failed");
+        return hardware_interface::CallbackReturn::ERROR;
+    }
     // TODO
     return hardware_interface::CallbackReturn::SUCCESS;
 }
@@ -92,7 +105,11 @@ hardware_interface::CallbackReturn UnitreeZ1HWInterface::on_shutdown(
  * This function should activate the hardware.
  */
 hardware_interface::CallbackReturn UnitreeZ1HWInterface::on_activate(
-        const rclcpp_lifecycle::State& /* prev_state */) {
+        const rclcpp_lifecycle::State& prev_state) {
+    if(hardware_interface::SystemInterface::on_shutdown(prev_state) != hardware_interface::CallbackReturn::SUCCESS){
+        RCLCPP_ERROR(Z1_HWI_LOGGER, "parent on_shutdown() failed");
+        return hardware_interface::CallbackReturn::ERROR;
+    }
     // TODO
     return hardware_interface::CallbackReturn::SUCCESS;
 }
@@ -101,7 +118,11 @@ hardware_interface::CallbackReturn UnitreeZ1HWInterface::on_activate(
  * This function should deactivate the hardware.
  */
 hardware_interface::CallbackReturn UnitreeZ1HWInterface::on_deactivate(
-        const rclcpp_lifecycle::State& /* prev_state */) {
+        const rclcpp_lifecycle::State& prev_state) {
+    if(hardware_interface::SystemInterface::on_deactivate(prev_state) != hardware_interface::CallbackReturn::SUCCESS){
+        RCLCPP_ERROR(Z1_HWI_LOGGER, "parent on_deactivate() failed");
+        return hardware_interface::CallbackReturn::ERROR;
+    }
     // TODO
     return hardware_interface::CallbackReturn::SUCCESS;
 }
@@ -111,6 +132,10 @@ hardware_interface::CallbackReturn UnitreeZ1HWInterface::on_deactivate(
  */
 hardware_interface::CallbackReturn UnitreeZ1HWInterface::on_error(
         const rclcpp_lifecycle::State& prev_state) {
+    if(hardware_interface::SystemInterface::on_error(prev_state) != hardware_interface::CallbackReturn::SUCCESS){
+        RCLCPP_ERROR(Z1_HWI_LOGGER, "parent on_error() failed");
+        return hardware_interface::CallbackReturn::ERROR;
+    }
     // TODO
     return hardware_interface::CallbackReturn::SUCCESS;
 }
@@ -128,18 +153,42 @@ hardware_interface::CallbackReturn UnitreeZ1HWInterface::on_error(
  */
 hardware_interface::CallbackReturn UnitreeZ1HWInterface::on_init(
         const hardware_interface::HardwareInfo& hw_info) {
+    if(hardware_interface::SystemInterface::on_init(hw_info) != hardware_interface::CallbackReturn::SUCCESS){
+        RCLCPP_ERROR(Z1_HWI_LOGGER, "parent on_init() failed");
+        return hardware_interface::CallbackReturn::ERROR;
+    }
     // TODO
     return hardware_interface::CallbackReturn::SUCCESS;
 }
 
 std::vector<hardware_interface::StateInterface>
 UnitreeZ1HWInterface::export_state_interfaces(){
-        // TODO
+    std::vector<hardware_interface::StateInterface> state_interfaces;
+    for (std::size_t i = 0; i < n_joints; i++) {
+        state_interfaces.emplace_back(
+                info_.joints[i].name, hardware_interface::HW_IF_POSITION, &rob_q[i]);
+        state_interfaces.emplace_back(
+                info_.joints[i].name, hardware_interface::HW_IF_VELOCITY, &rob_dq[i]);
+        state_interfaces.emplace_back(
+                info_.joints[i].name, hardware_interface::HW_IF_ACCELERATION, &rob_ddq[i]);
+        state_interfaces.emplace_back(
+                info_.joints[i].name, hardware_interface::HW_IF_EFFORT, &rob_tau[i]);
+    }
+    return state_interfaces;
 };
 
 std::vector<hardware_interface::CommandInterface>
 UnitreeZ1HWInterface::export_command_interfaces() {
-    // TODO
+    std::vector<hardware_interface::CommandInterface> command_interfaces;
+    for (std::size_t i = 0; i < n_joints; i++) {
+        command_interfaces.emplace_back(
+                info_.joints[i].name, hardware_interface::HW_IF_POSITION, &cmd_q[i]);
+        command_interfaces.emplace_back(
+                info_.joints[i].name, hardware_interface::HW_IF_VELOCITY, &cmd_dq[i]);
+        command_interfaces.emplace_back(
+                info_.joints[i].name, hardware_interface::HW_IF_EFFORT, &cmd_tau[i]);
+    }
+    return command_interfaces;
 }
 
 hardware_interface::return_type UnitreeZ1HWInterface::read(
