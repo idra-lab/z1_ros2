@@ -1,4 +1,4 @@
-<?xl version="1.0"?>
+<?xml version="1.0"?>
 
 <!-- This file is based on ur.ros2_contro.xacro provided by Universal Robots for     -->
 <!-- their robots, but with data ported for the Z1 manipulator from alientree.       -->
@@ -9,7 +9,7 @@
 
   <xacro:macro name="z1_ros2_control" params="
     name
-    sim_ignition:=false
+    sim_ignition:=true
     prefix
     ">
 
@@ -19,13 +19,13 @@
           <plugin> ign_ros2_control/IgnitionSystem </plugin>
         </xacro:if>
         <xacro:unless value="${sim_ignition}">
-          <plugin> unitree_z1_hw_interface/z1_effort_hw_interface</plugin>
+          <plugin>unitree_z1_hw_interface/UnitreeZ1HWInterface</plugin>
           <param name="gripper">true</param>
           <!-- add other necessary parameters here -->
         </xacro:unless>
       </hardware>
 
-      <joint name="${prefix}shoulder_pan_joint">
+      <joint name="$(arg prefix)shoulder_pan_joint">
         <command_interface name="position">
           <param name="min"> ${joint1_PositionMin} </param>
           <param name="max"> ${joint1_PositionMax} </param>
@@ -43,7 +43,7 @@
         <state_interface name="effort"/>
       </joint>
 
-      <joint name="${prefix}shoulder_lift_joint">
+      <joint name="$(arg prefix)shoulder_lift_joint">
         <command_interface name="position">
           <param name="min"> ${joint1_PositionMin} </param>
           <param name="max"> ${joint1_PositionMax} </param>
@@ -61,7 +61,7 @@
         <state_interface name="effort"/>
       </joint>
 
-      <joint name="${prefix}elbow_joint">
+      <joint name="$(arg prefix)elbow_joint">
         <command_interface name="position">
           <param name="min"> ${joint1_PositionMin} </param>
           <param name="max"> ${joint1_PositionMax} </param>
@@ -79,7 +79,7 @@
         <state_interface name="effort"/>
       </joint>
 
-      <joint name="${prefix}wrist_1_joint">
+      <joint name="$(arg prefix)wrist_1_joint">
         <command_interface name="position">
           <param name="min"> ${joint1_PositionMin} </param>
           <param name="max"> ${joint1_PositionMax} </param>
@@ -97,7 +97,7 @@
         <state_interface name="effort"/>
       </joint>
 
-      <joint name="${prefix}wrist_2_joint">
+      <joint name="$(arg prefix)wrist_2_joint">
         <command_interface name="position">
           <param name="min"> ${joint1_PositionMin} </param>
           <param name="max"> ${joint1_PositionMax} </param>
@@ -115,7 +115,7 @@
         <state_interface name="effort"/>
       </joint>
 
-      <joint name="${prefix}wrist_3_joint">
+      <joint name="$(arg prefix)wrist_3_joint">
         <command_interface name="position">
           <param name="min"> ${joint1_PositionMin} </param>
           <param name="max"> ${joint1_PositionMax} </param>
