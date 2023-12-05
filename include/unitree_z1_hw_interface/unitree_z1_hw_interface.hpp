@@ -1,6 +1,9 @@
 #ifndef UNITREE_Z1_HW_INTERFACE_HPP__
 #define UNITREE_Z1_HW_INTERFACE_HPP__
 
+#include <cstddef>
+#include <unitree_arm_sdk/control/unitreeArm.h>
+
 #include <hardware_interface/handle.hpp>
 #include <hardware_interface/hardware_info.hpp>
 #include <hardware_interface/system_interface.hpp>

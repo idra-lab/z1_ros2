@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.8)
 project(unitree_z1_hw_interface)
 
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_COMPILER gcc)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
@@ -8,6 +10,7 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 endif()
 
 set(ROS2_REQUIRED_COMPONENTS
+    ament_cmake
     hardware_interface
     pluginlib
     rclcpp
@@ -53,7 +56,8 @@ add_library(
 target_include_directories(
     ${PROJECT_NAME}
     PUBLIC
-    ${CMAKE_CURRENT_LIST_DIR}/include
+    $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:include/${PROJECT_NAME}>
     PRIVATE
     ${UNITREE_Z1_SDK_INCLUDE_PATH}
     )
@@ -66,6 +70,14 @@ ament_target_dependencies(
     ${PROJECT_NAME}
     PUBLIC
     ${ROS2_REQUIRED_COMPONENTS}
+    )
+target_compile_options(
+    ${PROJECT_NAME}
+    PRIVATE
+    -Wall
+    -Wextra
+    -Wpedantic
+    -Wno-comment
     )
 
 
@@ -89,19 +101,33 @@ endif()
 # |___|_| |_|___/\__\__,_|_|_|
 #
 
+pluginlib_export_plugin_description_file(hardware_interface unitree_z1_hw_interface.xml)
+
 install(
     TARGETS ${PROJECT_NAME}
-    DESTINATION lib/${PROJECT_NAME}
+    EXPORT export_${PROJECT_NAME}
+    ARCHIVE DESTINATION lib
+    LIBRARY DESTINATION lib
+    RUNTIME DESTINATION bin
     )
 install(
-    DIRECTORY include/
+    FILES ${UNITREE_Z1_SDK_LIB}
+    DESTINATION lib
+    )
+
+# install(
+#     DIRECTORY include/${PROJECT_NAME}
+#     DESTINATION include/${PROJECT_NAME}
+#     )
+install(
+    DIRECTORY include
     DESTINATION include
     )
 install(
-    DIRECTORY launch/ config/ urdf/ meshes/
+    DIRECTORY launch config urdf meshes rviz
     DESTINATION share/${PROJECT_NAME}
     )
 
-
-pluginlib_export_plugin_description_file(hardware_interface unitree_z1_hw_interface.xml)
+ament_export_targets(export_${PROJECT_NAME} HAS_LIBRARY_TARGET)
+ament_export_dependencies(${ROS2_REQUIRED_COMPONENTS})
 ament_package()
