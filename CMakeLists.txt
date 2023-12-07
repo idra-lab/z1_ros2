@@ -5,6 +5,11 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_COMPILER gcc)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+# Two options for the external dependencies are available:
+# Setting the flag to true means that the unitree Z1 controller will be used to compile
+# the target, otherwise the unitree Z1 SDK will be used.
+set(USE_UNITREE_Z1_CONTROLLER TRUE)
+
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
@@ -22,6 +27,10 @@ foreach(COMPONENT ${ROS2_REQUIRED_COMPONENTS})
 endforeach()
 
 
+function(print_variable VAR)
+    message(STATUS "${VAR} = ${${VAR}}")
+endfunction()
+
 #  ____  ____  _  __  ____       _
 # / ___||  _ \| |/ / / ___|  ___| |_ _   _ _ __
 # \___ \| | | | ' /  \___ \ / _ \ __| | | | '_ \
@@ -31,11 +40,20 @@ endforeach()
 find_package(Eigen3 REQUIRED)
 find_package(Boost REQUIRED)
 
-set(UNITREE_Z1_SDK_PATH ${CMAKE_CURRENT_LIST_DIR}/unitree_z1_sdk)
+if(USE_UNITREE_Z1_CONTROLLER)
+    message(STATUS "Using Z1 controller")
+    set(UNITREE_Z1_SDK_PATH ${CMAKE_CURRENT_LIST_DIR}/unitree_z1_controller)
+else()
+    message(STATUS "Using Z1 SDK")
+    set(UNITREE_Z1_SDK_PATH ${CMAKE_CURRENT_LIST_DIR}/unitree_z1_sdk)
+endif()
 set(UNITREE_Z1_SDK_LIB_PATH ${UNITREE_Z1_SDK_PATH}/lib)
 set(UNITREE_Z1_SDK_INCLUDE_PATH ${UNITREE_Z1_SDK_PATH}/include)
 set(UNITREE_Z1_SDK_LIB ${UNITREE_Z1_SDK_LIB_PATH}/libZ1_SDK_${CMAKE_SYSTEM_PROCESSOR}.so)
-
+print_variable(UNITREE_Z1_SDK_PATH)
+print_variable(UNITREE_Z1_SDK_LIB_PATH)
+print_variable(UNITREE_Z1_SDK_INCLUDE_PATH)
+print_variable(UNITREE_Z1_SDK_LIB)
 
 #  _   ___        __  ___       _             __
 # | | | \ \      / / |_ _|_ __ | |_ ___ _ __ / _| __ _  ___ ___
@@ -79,20 +97,6 @@ target_compile_options(
     -Wpedantic
     -Wno-comment
     )
-
-
-if(BUILD_TESTING)
-  find_package(ament_lint_auto REQUIRED)
-  # the following line skips the linter which checks for copyrights
-  # comment the line when a copyright and license is added to all source files
-  set(ament_cmake_copyright_FOUND TRUE)
-  # the following line skips cpplint (only works in a git repo)
-  # comment the line when this package is in a git repo and when
-  # a copyright and license is added to all source files
-  set(ament_cmake_cpplint_FOUND TRUE)
-  ament_lint_auto_find_test_dependencies()
-endif()
-
 
 #  ___           _        _ _
 # |_ _|_ __  ___| |_ __ _| | |

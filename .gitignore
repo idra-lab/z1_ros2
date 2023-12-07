@@ -3,6 +3,7 @@ _build/
 
 .vscode/
 .idea/
+.cache/
 *.iml
 *.ipr
 *.iws
