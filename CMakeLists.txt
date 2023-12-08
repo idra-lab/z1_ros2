@@ -1,14 +1,8 @@
 cmake_minimum_required(VERSION 3.8)
 project(unitree_z1_hw_interface)
 
-set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_CXX_COMPILER gcc)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-
-# Two options for the external dependencies are available:
-# Setting the flag to true means that the unitree Z1 controller will be used to compile
-# the target, otherwise the unitree Z1 SDK will be used.
-set(USE_UNITREE_Z1_CONTROLLER TRUE)
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
@@ -31,29 +25,21 @@ function(print_variable VAR)
     message(STATUS "${VAR} = ${${VAR}}")
 endfunction()
 
-#  ____  ____  _  __  ____       _
-# / ___||  _ \| |/ / / ___|  ___| |_ _   _ _ __
-# \___ \| | | | ' /  \___ \ / _ \ __| | | | '_ \
-#  ___) | |_| | . \   ___) |  __/ |_| |_| | |_) |
-# |____/|____/|_|\_\ |____/ \___|\__|\__,_| .__/
-#                                         |_|
-find_package(Eigen3 REQUIRED)
-find_package(Boost REQUIRED)
 
-if(USE_UNITREE_Z1_CONTROLLER)
-    message(STATUS "Using Z1 controller")
-    set(UNITREE_Z1_SDK_PATH ${CMAKE_CURRENT_LIST_DIR}/unitree_z1_controller)
-else()
-    message(STATUS "Using Z1 SDK")
-    set(UNITREE_Z1_SDK_PATH ${CMAKE_CURRENT_LIST_DIR}/unitree_z1_sdk)
-endif()
+#  _   _       _ _                   ____       _
+# | | | |_ __ (_) |_ _ __ ___  ___  / ___|  ___| |_ _   _ _ __
+# | | | | '_ \| | __| '__/ _ \/ _ \ \___ \ / _ \ __| | | | '_ \
+# | |_| | | | | | |_| | |  __/  __/  ___) |  __/ |_| |_| | |_) |
+#  \___/|_| |_|_|\__|_|  \___|\___| |____/ \___|\__|\__,_| .__/
+#                                                        |_|
+
+# Build the Z1 controller
+add_subdirectory(unitree_z1_controller)
+
+set(UNITREE_Z1_SDK_PATH ${CMAKE_CURRENT_LIST_DIR}/unitree_z1_sdk)
 set(UNITREE_Z1_SDK_LIB_PATH ${UNITREE_Z1_SDK_PATH}/lib)
 set(UNITREE_Z1_SDK_INCLUDE_PATH ${UNITREE_Z1_SDK_PATH}/include)
 set(UNITREE_Z1_SDK_LIB ${UNITREE_Z1_SDK_LIB_PATH}/libZ1_SDK_${CMAKE_SYSTEM_PROCESSOR}.so)
-print_variable(UNITREE_Z1_SDK_PATH)
-print_variable(UNITREE_Z1_SDK_LIB_PATH)
-print_variable(UNITREE_Z1_SDK_INCLUDE_PATH)
-print_variable(UNITREE_Z1_SDK_LIB)
 
 #  _   ___        __  ___       _             __
 # | | | \ \      / / |_ _|_ __ | |_ ___ _ __ / _| __ _  ___ ___
@@ -119,10 +105,6 @@ install(
     DESTINATION lib
     )
 
-# install(
-#     DIRECTORY include/${PROJECT_NAME}
-#     DESTINATION include/${PROJECT_NAME}
-#     )
 install(
     DIRECTORY include
     DESTINATION include
