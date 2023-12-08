@@ -20,14 +20,16 @@ from ament_index_python.packages import (
 def launch_setup(context, *args, **kwargs):
 
     xacro_file = context.launch_configurations["xacro_file"]
+    gripper = context.launch_configurations["gripper"]
     rviz = context.launch_configurations["rviz"]
     controllers = context.launch_configurations["controllers"]
     sim_ignition = context.launch_configurations["sim_ignition"]
 
     robot_description_content = xacro.process(xacro_file, mappings={
         "prefix": "",
+        "with_gripper": gripper,
         "simulation_controllers": controllers,
-        "sim_ignition": sim_ignition
+        "sim_ignition": sim_ignition,
         })
     robot_description = {"robot_description": robot_description_content}
     with open("file.urdf", "w") as f:
@@ -64,10 +66,18 @@ def launch_setup(context, *args, **kwargs):
         output="screen",
         )
 
+    controller_manager_node = Node(
+        package="controller_manager",
+        executable="ros2_control_node",
+        parameters=[robot_description, controllers, {"use_sim_time": False}],
+        )
+
+
     notes_to_start = [
         robot_state_publisher_node,
         rviz_node,
         gui_joint_space_pub_node,
+        controller_manager_node,
         ]
     return notes_to_start
 
@@ -94,6 +104,9 @@ def generate_launch_description():
                 ),
             description="path to the controllers.yaml file"
             )
+        )
+    declared_arguments.append(
+            DeclareLaunchArgument("gripper", default_value="true", description="Using the default gripper")
         )
     declared_arguments.append(
         DeclareLaunchArgument(
