@@ -76,11 +76,16 @@ namespace unitree {
                         const rclcpp::Time&     time,
                         const rclcpp::Duration& period) override;
 
+                hardware_interface::return_type perform_command_mode_switch(
+                        const std::vector<std::string>& start_interfaces,
+                        const std::vector<std::string>& stop_interfaces) override;
+
 
             private:
                 bool with_gripper;
                 std::size_t n_joints;
                 void shutdown();
+                UNITREE_ARM::unitreeArm *arm;
 
                 std::vector<double> rob_q;
                 std::vector<double> rob_dq;

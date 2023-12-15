@@ -275,7 +275,7 @@
             </inertial>
         </link>
 
-        <joint name="jointGripper" type="revolute">
+        <joint name="gripper" type="revolute">
             <origin rpy="0 0 0" xyz="0.049 0.0 0"/>
             <parent link="gripperStator"/>
             <child link="gripperMover"/>

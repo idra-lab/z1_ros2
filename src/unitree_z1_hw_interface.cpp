@@ -1,5 +1,6 @@
 #include <cctype>
 #include <cstddef>
+#include <Eigen/Core>
 #include <stdexcept>
 #include <string>
 #include <unitree_arm_sdk/control/unitreeArm.h>
@@ -14,6 +15,7 @@
 #include <rclcpp/rclcpp.hpp>
 #include <rclcpp/logging.hpp>
 #include <unitree_z1_hw_interface/unitree_z1_hw_interface.hpp>
+#include "unitree_arm_sdk/utilities/loop.h"
 
 
 using unitree::z1::hw_interface::UnitreeZ1HWInterface;
@@ -29,7 +31,13 @@ using unitree::z1::hw_interface::UnitreeZ1HWInterface;
 #define SHOW_DEBUG_MESSAGES
 #define Z1_HWI_LOGGER rclcpp::get_logger("UnitreeZ1HWInterface")
 
+typedef Eigen::Matrix<double, 6, 1> Vector6d;
+
+using pos_vel_pair = std::pair<Vector6d, Vector6d>;
+
+
 static void to_lower_string(std::string& str);
+std::vector<pos_vel_pair> interpolate(const Vector6d& qi, const Vector6d& qf, double dt, double tf);
 
 //   ____                _                   _
 //  / ___|___  _ __  ___| |_ _ __ _   _  ___| |_ ___  _ __ ___
@@ -110,6 +118,8 @@ hardware_interface::CallbackReturn UnitreeZ1HWInterface::on_shutdown(
         RCLCPP_ERROR(Z1_HWI_LOGGER, "parent on_shutdown() failed");
         return hardware_interface::CallbackReturn::ERROR;
     }
+
+    arm->lowcmd->setControlGain();
     // TODO
     RCLCPP_DEBUG(Z1_HWI_LOGGER, "on_shutdown() completed successfully");
     return hardware_interface::CallbackReturn::SUCCESS;
@@ -192,6 +202,12 @@ hardware_interface::CallbackReturn UnitreeZ1HWInterface::on_init(
         RCLCPP_INFO(Z1_HWI_LOGGER, "Gripper is disabled");
     }
 
+    arm = new UNITREE_ARM::unitreeArm(with_gripper);
+    RCLCPP_DEBUG(Z1_HWI_LOGGER, "arm object created");
+    arm->sendRecvThread->start();
+    arm->setFsm(UNITREE_ARM::ArmFSMState::PASSIVE);
+    arm->setFsm(UNITREE_ARM::ArmFSMState::LOWCMD);
+
     n_joints = hw_info.joints.size();
     rob_q.resize(n_joints);
     rob_dq.resize(n_joints);
@@ -201,6 +217,7 @@ hardware_interface::CallbackReturn UnitreeZ1HWInterface::on_init(
     cmd_dq.resize(n_joints);
     cmd_tau.resize(n_joints);
 
+    arm->sendRecvThread->shutdown();
     RCLCPP_DEBUG(Z1_HWI_LOGGER, "on_init() completed successfully");
     return hardware_interface::CallbackReturn::SUCCESS;
 }
@@ -241,13 +258,48 @@ UnitreeZ1HWInterface::export_command_interfaces() {
 
 hardware_interface::return_type UnitreeZ1HWInterface::read(
         const rclcpp::Time& /* time */, const rclcpp::Duration& /* period */) {
-    // TODO
+    for(std::size_t i = 0; i < n_joints; i++){
+        rob_q[i] = arm->lowstate->q[i];
+        rob_dq[i] = arm->lowstate->dq[i];
+        rob_ddq[i] = arm->lowstate->ddq[i];
+        rob_tau[i] = arm->lowstate->tau[i];
+    }
+    arm->sendRecv();
     return hardware_interface::return_type::OK;
 }
 
 hardware_interface::return_type UnitreeZ1HWInterface::write(
         const rclcpp::Time& /* time */, const rclcpp::Duration& /* period */) {
-    // TODO
+    for(std::size_t i = 0; i < n_joints; i++){
+        cmd_q[i] = arm->lowcmd->q[i];
+        cmd_dq[i] = arm->lowcmd->dq[i];
+        cmd_tau[i] = arm->lowcmd->tau[i];
+    }
+    arm->sendRecv();
+    return hardware_interface::return_type::OK;
+}
+
+hardware_interface::return_type UnitreeZ1HWInterface::perform_command_mode_switch(
+        const std::vector<std::string>& /* start_interfaces */,
+        const std::vector<std::string>& stop_interfaces) {
+    RCLCPP_DEBUG(Z1_HWI_LOGGER, "perform_command_mode_switch() called");
+    bool to_torque_control = true;
+    for(const auto& stop_interface : stop_interfaces){
+        if(stop_interface != hardware_interface::HW_IF_EFFORT){
+            to_torque_control = false;
+            break;
+        }
+    }
+
+    if(to_torque_control){
+        RCLCPP_DEBUG(Z1_HWI_LOGGER, "Switching to torque control");
+        arm->lowcmd->setZeroKp();
+        arm->lowcmd->setZeroKd();
+    }else{
+        RCLCPP_DEBUG(Z1_HWI_LOGGER, "Switching to position control");
+        arm->lowcmd->setControlGain();
+    }
+    arm->sendRecv();
     return hardware_interface::return_type::OK;
 }
 
@@ -260,7 +312,24 @@ hardware_interface::return_type UnitreeZ1HWInterface::write(
 
 void UnitreeZ1HWInterface::shutdown() {
     RCLCPP_INFO(Z1_HWI_LOGGER, "Shutting down the hardware interface");
-    // TODO
+    arm->lowcmd->setControlGain();
+    Vector6d qi = Vector6d::Zero();
+    for(std::size_t i = 0; i < 6; i++){
+        qi[i] = arm->lowstate->q[i];
+    }
+    double& dt = arm->_ctrlComp->dt;
+    auto timer = UNITREE_ARM::Timer(dt);
+    auto traj = interpolate(qi, Vector6d::Zero(), dt, 4);
+
+    RCLCPP_DEBUG(Z1_HWI_LOGGER, "Starting shutdown trajectory");
+    for(const auto& pair : traj){
+        std::cout << pair.first.transpose() << std::endl;
+        arm->setArmCmd(pair.first, pair.second);
+        arm->sendRecv();
+        timer.sleep();
+    }
+    arm->setFsm(UNITREE_ARM::ArmFSMState::PASSIVE);
+    arm->sendRecv();
     RCLCPP_DEBUG(Z1_HWI_LOGGER, "Hardware interface shut down successfully");
 
 }
@@ -280,6 +349,33 @@ void UnitreeZ1HWInterface::shutdown() {
 static void to_lower_string(std::string& str) {
     std::transform(str.begin(), str.end(), str.begin(),
                    [](unsigned char c) { return std::tolower(c); });
+}
+
+
+/**
+ * @brief Interpolate between two points in joint space.
+ *
+ * @param[in] qi        Initial joint position.
+ * @param[in] qf        Final joint position.
+ * @param[in] dt        Time step.
+ * @param[in] tf        Total time.
+ *
+ * @return A vector of pairs of joint position and velocity.
+ */
+std::vector<pos_vel_pair> interpolate(const Vector6d& qi, const Vector6d& qf, double dt, double tf) {
+    std::vector<pos_vel_pair> result;
+    const Vector6d a_coeff = -2 * (qf - qi) / (tf * tf * tf);
+    const Vector6d b_coeff = 3 * (qf - qi) / (tf * tf);
+    const Vector6d c_coeff = Vector6d::Zero();
+    const Vector6d d_coeff = qi;
+
+    Vector6d q_vec, dq_vec;
+    for(double t = 0; t < tf; t += dt){
+        q_vec = a_coeff * t * t * t + b_coeff * t * t + c_coeff * t + d_coeff;
+        dq_vec = 3 * a_coeff * t * t + 2 * b_coeff * t + c_coeff;
+        result.push_back(std::make_pair(q_vec, dq_vec));
+    }
+    return result;
 }
 
 //  _____                       _
