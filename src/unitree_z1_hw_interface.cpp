@@ -282,23 +282,33 @@ hardware_interface::return_type UnitreeZ1HWInterface::write(
 hardware_interface::return_type UnitreeZ1HWInterface::perform_command_mode_switch(
         const std::vector<std::string>& /* start_interfaces */,
         const std::vector<std::string>& stop_interfaces) {
-    RCLCPP_DEBUG(Z1_HWI_LOGGER, "perform_command_mode_switch() called");
-    bool to_torque_control = true;
-    for(const auto& stop_interface : stop_interfaces){
-        if(stop_interface != hardware_interface::HW_IF_EFFORT){
-            to_torque_control = false;
-            break;
-        }
-    }
 
-    if(to_torque_control){
+    RCLCPP_DEBUG(Z1_HWI_LOGGER, "perform_command_mode_switch() called");
+    std::string control_mode;
+    if(stop_interfaces.empty()){
+        control_mode = hardware_interface::HW_IF_EFFORT;
+    } else {
+        std::string control_mode = stop_interfaces[0];
+    }
+    RCLCPP_DEBUG(Z1_HWI_LOGGER, "Switching to control mode %s", control_mode.c_str());
+    RCLCPP_DEBUG(Z1_HWI_LOGGER, "Hello");
+
+    if(control_mode == hardware_interface::HW_IF_POSITION){
+        RCLCPP_DEBUG(Z1_HWI_LOGGER, "Switching to position control");
+        arm->lowcmd->setControlGain();
+    } else if(control_mode == hardware_interface::HW_IF_VELOCITY){
+        RCLCPP_DEBUG(Z1_HWI_LOGGER, "Switching to velocity control");
+        arm->lowcmd->setControlGain();
+        arm->lowcmd->setZeroKp();
+    } else if(control_mode == hardware_interface::HW_IF_EFFORT){
         RCLCPP_DEBUG(Z1_HWI_LOGGER, "Switching to torque control");
         arm->lowcmd->setZeroKp();
         arm->lowcmd->setZeroKd();
-    }else{
-        RCLCPP_DEBUG(Z1_HWI_LOGGER, "Switching to position control");
-        arm->lowcmd->setControlGain();
+    } else{
+        RCLCPP_ERROR(Z1_HWI_LOGGER, "Unknown control mode %s", control_mode.data());
+        return hardware_interface::return_type::ERROR;
     }
+
     arm->sendRecv();
     return hardware_interface::return_type::OK;
 }
@@ -316,6 +326,7 @@ void UnitreeZ1HWInterface::shutdown() {
     Vector6d qi = Vector6d::Zero();
     for(std::size_t i = 0; i < 6; i++){
         qi[i] = arm->lowstate->q[i];
+        arm->lowcmd->q[i] = qi[i];
     }
     double& dt = arm->_ctrlComp->dt;
     auto timer = UNITREE_ARM::Timer(dt);
@@ -328,8 +339,10 @@ void UnitreeZ1HWInterface::shutdown() {
         arm->sendRecv();
         timer.sleep();
     }
+    RCLCPP_DEBUG(Z1_HWI_LOGGER, "Trajectory completed");
+    arm->sendRecvThread->start();
     arm->setFsm(UNITREE_ARM::ArmFSMState::PASSIVE);
-    arm->sendRecv();
+    arm->sendRecvThread->shutdown();
     RCLCPP_DEBUG(Z1_HWI_LOGGER, "Hardware interface shut down successfully");
 
 }
