@@ -76,6 +76,10 @@ def launch_setup(context, *args, **kwargs):
         parameters=[robot_description, controllers, {
             "use_sim_time": use_sim_time
             }],
+        remappings=[
+            ('motion_control_handle/target_frame', 'target_frame'),
+            ('cartesian_motion_controller/target_frame', 'target_frame'),
+            ]
         )
 
     joint_controller_node = Node(
@@ -87,12 +91,29 @@ def launch_setup(context, *args, **kwargs):
             }]
         )
 
+    cartesian_motion_controller_spawner = Node(
+        package="controller_manager",
+        executable="spawner",
+        arguments=["cartesian_motion_controller", "-c", "/controller_manager"],
+        parameters=[{"use_sim_time": use_sim_time}]
+    )
+
+    motion_control_handle_spawner = Node(
+        package="controller_manager",
+        executable="spawner",
+        # arguments=["motion_control_handle", "-c"," --stopped " "/controller_manager"],
+        arguments=["motion_control_handle", "-c", "/controller_manager"],
+        parameters=[{"use_sim_time": use_sim_time}]
+    )
+
     notes_to_start = [
         robot_state_publisher_node,
+        controller_manager_node,
         rviz_node,
         joint_state_broadcaster_spawner,
-        controller_manager_node,
-        joint_controller_node,
+        motion_control_handle_spawner,
+        cartesian_motion_controller_spawner,
+        # joint_controller_node,
         ]
     return notes_to_start
 

@@ -1,6 +1,6 @@
 controller_manager:
   ros__parameters:
-    update_rate: 500 # Hz
+    update_rate: 100 # Hz
 
     joint_state_broadcaster:
       type: joint_state_broadcaster/JointStateBroadcaster
@@ -11,6 +11,12 @@ controller_manager:
     velocity_controller:
       type: velocity_controllers/JointGroupVelocityController
 
+    cartesian_motion_controller:
+      type: cartesian_motion_controller/CartesianMotionController
+
+    motion_control_handle:
+      type: cartesian_controller_handles/MotionControlHandle
+
 
         # speed_scaling_state_broadcaster:
         #   ros__parameters:
@@ -18,6 +24,50 @@ controller_manager:
 
 position_controller:
   ros__parameters:
+    joints:
+      - shoulder_pan_joint
+      - shoulder_lift_joint
+      - elbow_joint
+      - wrist_1_joint
+      - wrist_2_joint
+      - wrist_3_joint
+
+cartesian_motion_controller:
+  ros__parameters:
+
+    # See the cartesian_compliance_controller
+    end_effector_link: "link06"
+    robot_base_link: "link00"
+    joints:
+      - shoulder_pan_joint
+      - shoulder_lift_joint
+      - elbow_joint
+      - wrist_1_joint
+      - wrist_2_joint
+      - wrist_3_joint
+
+    # See the cartesian_compliance_controller
+    command_interfaces:
+      - position
+      # - velocity
+
+    solver:
+        error_scale: 1.0
+        iterations: 10
+
+    pd_gains:
+        trans_x: {p: 1.0}
+        trans_y: {p: 1.0}
+        trans_z: {p: 1.0}
+        rot_x: {p: 0.5}
+        rot_y: {p: 0.5}
+        rot_z: {p: 0.5}
+
+motion_control_handle:
+  ros__parameters:
+    end_effector_link: "link06"
+    robot_base_link: "link00"
+    ft_sensor_ref_link: "link06"
     joints:
       - shoulder_pan_joint
       - shoulder_lift_joint

@@ -7,6 +7,7 @@
 #include <unitree_arm_sdk/message/arm_common.h>
 #include <unitree_arm_sdk/model/ArmModel.h>
 #include <vector>
+#include <stdio.h>
 
 #include <hardware_interface/hardware_info.hpp>
 #include <hardware_interface/system_interface.hpp>
@@ -31,6 +32,8 @@ using unitree::z1::hw_interface::UnitreeZ1HWInterface;
 
 #define SHOW_DEBUG_MESSAGES
 #define Z1_HWI_LOGGER rclcpp::get_logger("UnitreeZ1HWInterface")
+#define LOG_PERIOD 50
+#define SHOW_SDK_DATA
 
 typedef Eigen::Matrix<double, 6, 1> Vector6d;
 
@@ -42,6 +45,7 @@ std::vector<pos_vel_pair> interpolate(const Vector6d& qi,
                                       const Vector6d& qf,
                                       double          dt,
                                       double          tf);
+std::string pretty_vector(const std::vector<double>& vec);
 
 //   ____                _                   _
 //  / ___|___  _ __  ___| |_ _ __ _   _  ___| |_ ___  _ __ ___
@@ -282,6 +286,15 @@ hardware_interface::return_type UnitreeZ1HWInterface::read(
         rob_ddq[i] = arm->lowstate->ddq[i];
         rob_tau[i] = arm->lowstate->tau[i];
     }
+
+#ifdef SHOW_SDK_DATA
+    static std::size_t k = 0;
+    if(k++ % LOG_PERIOD == 0) {
+        RCLCPP_INFO(Z1_HWI_LOGGER, "received q:   %s", pretty_vector(rob_q).c_str());
+        RCLCPP_INFO(Z1_HWI_LOGGER, "received dq:  %s", pretty_vector(rob_dq).c_str());
+        RCLCPP_INFO(Z1_HWI_LOGGER, "received tau: %s", pretty_vector(rob_tau).c_str());
+    }
+#endif
     arm->sendRecv();
     return hardware_interface::return_type::OK;
 }
@@ -289,28 +302,37 @@ hardware_interface::return_type UnitreeZ1HWInterface::read(
 hardware_interface::return_type UnitreeZ1HWInterface::write(
         const rclcpp::Time& /* time */, const rclcpp::Duration& /* period */) {
     for (std::size_t i = 0; i < n_joints; i++) {
-        cmd_q[i]   = arm->lowcmd->q[i];
-        cmd_dq[i]  = arm->lowcmd->dq[i];
-        cmd_tau[i] = arm->lowcmd->tau[i];
+        arm->lowcmd->q[i]   = cmd_q[i];
+        arm->lowcmd->dq[i]  = cmd_dq[i];
+        arm->lowcmd->tau[i] = cmd_tau[i];
     }
     arm->sendRecv();
+
+#ifdef SHOW_SDK_DATA
+    static std::size_t k = 0;
+    if(k++ % LOG_PERIOD == 0) {
+        RCLCPP_INFO(Z1_HWI_LOGGER, "commanded q:   %s", pretty_vector(cmd_q).c_str());
+        RCLCPP_INFO(Z1_HWI_LOGGER, "commanded dq:  %s", pretty_vector(cmd_dq).c_str());
+        RCLCPP_INFO(Z1_HWI_LOGGER, "commanded tau: %s", pretty_vector(cmd_tau).c_str());
+    }
+#endif
+
     return hardware_interface::return_type::OK;
 }
 
 hardware_interface::return_type UnitreeZ1HWInterface::perform_command_mode_switch(
-        const std::vector<std::string>& /* start_interfaces */,
+        const std::vector<std::string>& start_interfaces,
         const std::vector<std::string>& stop_interfaces) {
     std::string control_mode;
-    if (stop_interfaces.empty()) {
+    std::string mystring;
+    if (start_interfaces.empty()) {
         control_mode = hardware_interface::HW_IF_EFFORT;
-        RCLCPP_INFO(Z1_HWI_LOGGER, "No control_mode is specified!");
-    } else {
-        std::string control_mode = stop_interfaces[0];
+        RCLCPP_INFO(Z1_HWI_LOGGER, "No control_mode is specified, leaving unchanged!");
+        return hardware_interface::return_type::OK;
     }
-
-    for (std::size_t i = 0; i < stop_interfaces.size(); i++) {
-        RCLCPP_DEBUG(Z1_HWI_LOGGER, "Stopping interface #%lu: %s", i, stop_interfaces[i].data());
-    }
+    mystring = start_interfaces[0];
+    auto slash_id = mystring.find('/');
+    control_mode = mystring.substr(slash_id + 1);
 
     if (control_mode == hardware_interface::HW_IF_POSITION) {
         RCLCPP_INFO(Z1_HWI_LOGGER, "Switching to position control");
@@ -408,6 +430,27 @@ std::vector<pos_vel_pair> interpolate(const Vector6d& qi,
         dq_vec = 3 * a_coeff * t * t + 2 * b_coeff * t + c_coeff;
         result.push_back(std::make_pair(q_vec, dq_vec));
     }
+    return result;
+}
+
+/**
+ * @brief Convert a vector to a string.
+ *
+ * @param[in] vec       The vector to be converted.
+ *
+ * @return A string representation of the vector.
+ */
+std::string pretty_vector(const std::vector<double>& vec) {
+    std::string result = "[";
+    char temp[20];
+    for (std::size_t i = 0; i < vec.size(); i++) {
+        if (i != 0) {
+            result += ", ";
+        }
+        sprintf(temp, "%6.4f", vec[i]);
+        result += std::string(temp);
+    }
+    result += "]";
     return result;
 }
 

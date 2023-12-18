@@ -46,16 +46,16 @@
 
       <joint name="$(arg prefix)shoulder_lift_joint">
         <command_interface name="position">
-          <param name="min"> ${joint1_PositionMin} </param>
-          <param name="max"> ${joint1_PositionMax} </param>
+          <param name="min"> ${joint2_PositionMin} </param>
+          <param name="max"> ${joint2_PositionMax} </param>
         </command_interface>
         <command_interface name="velocity">
           <param name="min"> -${velocityMax} </param>
           <param name="max"> ${velocityMax} </param>
         </command_interface>
         <command_interface name="effort">
-          <param name="min"> -${torqueMax} </param>
-          <param name="max"> ${torqueMax} </param>
+          <param name="min"> -${2*torqueMax} </param>
+          <param name="max"> ${2*torqueMax} </param>
         </command_interface>
         <state_interface name="position"/>
         <state_interface name="velocity"/>
@@ -64,8 +64,8 @@
 
       <joint name="$(arg prefix)elbow_joint">
         <command_interface name="position">
-          <param name="min"> ${joint1_PositionMin} </param>
-          <param name="max"> ${joint1_PositionMax} </param>
+          <param name="min"> ${joint3_PositionMin} </param>
+          <param name="max"> ${joint3_PositionMax} </param>
         </command_interface>
         <command_interface name="velocity">
           <param name="min"> -${velocityMax} </param>
@@ -82,8 +82,8 @@
 
       <joint name="$(arg prefix)wrist_1_joint">
         <command_interface name="position">
-          <param name="min"> ${joint1_PositionMin} </param>
-          <param name="max"> ${joint1_PositionMax} </param>
+          <param name="min"> ${joint4_PositionMin} </param>
+          <param name="max"> ${joint4_PositionMax} </param>
         </command_interface>
         <command_interface name="velocity">
           <param name="min"> -${velocityMax} </param>
@@ -100,8 +100,8 @@
 
       <joint name="$(arg prefix)wrist_2_joint">
         <command_interface name="position">
-          <param name="min"> ${joint1_PositionMin} </param>
-          <param name="max"> ${joint1_PositionMax} </param>
+          <param name="min"> ${joint5_PositionMin} </param>
+          <param name="max"> ${joint5_PositionMax} </param>
         </command_interface>
         <command_interface name="velocity">
           <param name="min"> -${velocityMax} </param>
@@ -118,8 +118,8 @@
 
       <joint name="$(arg prefix)wrist_3_joint">
         <command_interface name="position">
-          <param name="min"> ${joint1_PositionMin} </param>
-          <param name="max"> ${joint1_PositionMax} </param>
+          <param name="min"> ${joint6_PositionMin} </param>
+          <param name="max"> ${joint6_PositionMax} </param>
         </command_interface>
         <command_interface name="velocity">
           <param name="min"> -${velocityMax} </param>
