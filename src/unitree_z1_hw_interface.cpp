@@ -215,7 +215,13 @@ hardware_interface::CallbackReturn UnitreeZ1HWInterface::on_init(
     arm = new UNITREE_ARM::unitreeArm(with_gripper);
     RCLCPP_DEBUG(Z1_HWI_LOGGER, "arm object created");
     arm->sendRecvThread->start();
+    arm->setArmCmd(arm->lowstate->getQ(), arm->lowstate->getQd());
+    arm->backToStart();
     arm->setFsm(UNITREE_ARM::ArmFSMState::PASSIVE);
+    RCLCPP_INFO(Z1_HWI_LOGGER, "Waiting arm for 1 second");
+    arm->sendRecvThread->shutdown();
+    rclcpp::sleep_for(std::chrono::seconds(1));
+    arm->sendRecvThread->start();
     arm->setFsm(UNITREE_ARM::ArmFSMState::LOWCMD);
 
     n_joints = hw_info.joints.size();
@@ -227,7 +233,6 @@ hardware_interface::CallbackReturn UnitreeZ1HWInterface::on_init(
     cmd_dq.resize(n_joints);
     cmd_tau.resize(n_joints);
 
-    arm->sendRecvThread->shutdown();
     RCLCPP_DEBUG(Z1_HWI_LOGGER, "on_init() completed successfully");
     return hardware_interface::CallbackReturn::SUCCESS;
 }
@@ -295,25 +300,27 @@ hardware_interface::return_type UnitreeZ1HWInterface::write(
 hardware_interface::return_type UnitreeZ1HWInterface::perform_command_mode_switch(
         const std::vector<std::string>& /* start_interfaces */,
         const std::vector<std::string>& stop_interfaces) {
-    RCLCPP_DEBUG(Z1_HWI_LOGGER, "perform_command_mode_switch() called");
     std::string control_mode;
     if (stop_interfaces.empty()) {
         control_mode = hardware_interface::HW_IF_EFFORT;
+        RCLCPP_INFO(Z1_HWI_LOGGER, "No control_mode is specified!");
     } else {
         std::string control_mode = stop_interfaces[0];
     }
-    RCLCPP_DEBUG(Z1_HWI_LOGGER, "Switching to control mode %s", control_mode.c_str());
-    RCLCPP_DEBUG(Z1_HWI_LOGGER, "Hello");
+
+    for (std::size_t i = 0; i < stop_interfaces.size(); i++) {
+        RCLCPP_DEBUG(Z1_HWI_LOGGER, "Stopping interface #%lu: %s", i, stop_interfaces[i].data());
+    }
 
     if (control_mode == hardware_interface::HW_IF_POSITION) {
-        RCLCPP_DEBUG(Z1_HWI_LOGGER, "Switching to position control");
+        RCLCPP_INFO(Z1_HWI_LOGGER, "Switching to position control");
         arm->lowcmd->setControlGain();
     } else if (control_mode == hardware_interface::HW_IF_VELOCITY) {
-        RCLCPP_DEBUG(Z1_HWI_LOGGER, "Switching to velocity control");
+        RCLCPP_INFO(Z1_HWI_LOGGER, "Switching to velocity control");
         arm->lowcmd->setControlGain();
         arm->lowcmd->setZeroKp();
     } else if (control_mode == hardware_interface::HW_IF_EFFORT) {
-        RCLCPP_DEBUG(Z1_HWI_LOGGER, "Switching to torque control");
+        RCLCPP_INFO(Z1_HWI_LOGGER, "Switching to torque control");
         arm->lowcmd->setZeroKp();
         arm->lowcmd->setZeroKd();
     } else {
