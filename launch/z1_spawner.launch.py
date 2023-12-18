@@ -24,13 +24,17 @@ def launch_setup(context, *args, **kwargs):
     rviz = context.launch_configurations["rviz"]
     controllers = context.launch_configurations["controllers"]
     sim_ignition = context.launch_configurations["sim_ignition"]
+    use_sim_time = False
 
-    robot_description_content = xacro.process(xacro_file, mappings={
-        "prefix": "",
-        "with_gripper": gripper,
-        "simulation_controllers": controllers,
-        "sim_ignition": sim_ignition,
-        })
+    robot_description_content = xacro.process(
+        xacro_file,
+        mappings={
+            "prefix": "",
+            "with_gripper": gripper,
+            "simulation_controllers": controllers,
+            "sim_ignition": sim_ignition,
+            }
+        )
     robot_description = {"robot_description": robot_description_content}
     with open("file.urdf", "w") as f:
         f.write(robot_description_content)
@@ -39,12 +43,9 @@ def launch_setup(context, *args, **kwargs):
         package="robot_state_publisher",
         executable="robot_state_publisher",
         output="both",
-        parameters=[
-            robot_description,
-            {
-                "use_sim_time": True,
-            }
-            ],
+        parameters=[robot_description, {
+            "use_sim_time": use_sim_time,
+            }],
         )
 
     rviz_node = Node(
@@ -60,23 +61,27 @@ def launch_setup(context, *args, **kwargs):
         condition=IfCondition(rviz),
         )
 
-    gui_joint_space_pub_node = Node(
-        package="joint_state_publisher_gui",
-        executable="joint_state_publisher_gui",
-        output="screen",
+    joint_state_broadcaster_spawner = Node(
+        package="controller_manager",
+        executable="spawner",
+        arguments=["joint_state_broadcaster", "-c", "/controller_manager"],
+        parameters=[{
+            "use_sim_time": use_sim_time
+            }]
         )
 
     controller_manager_node = Node(
         package="controller_manager",
         executable="ros2_control_node",
-        parameters=[robot_description, controllers, {"use_sim_time": False}],
+        parameters=[robot_description, controllers, {
+            "use_sim_time": use_sim_time
+            }],
         )
-
 
     notes_to_start = [
         robot_state_publisher_node,
         rviz_node,
-        gui_joint_space_pub_node,
+        joint_state_broadcaster_spawner,
         controller_manager_node,
         ]
     return notes_to_start
@@ -106,7 +111,9 @@ def generate_launch_description():
             )
         )
     declared_arguments.append(
-            DeclareLaunchArgument("gripper", default_value="true", description="Using the default gripper")
+        DeclareLaunchArgument(
+            "gripper", default_value="true", description="Using the default gripper"
+            )
         )
     declared_arguments.append(
         DeclareLaunchArgument(

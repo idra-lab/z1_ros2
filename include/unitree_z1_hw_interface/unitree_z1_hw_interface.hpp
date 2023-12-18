@@ -82,10 +82,10 @@ namespace unitree {
 
 
             private:
-                bool with_gripper;
-                std::size_t n_joints;
-                void shutdown();
-                UNITREE_ARM::unitreeArm *arm;
+                bool                     with_gripper;
+                std::size_t              n_joints;
+                void                     shutdown();
+                UNITREE_ARM::unitreeArm* arm;
 
                 std::vector<double> rob_q;
                 std::vector<double> rob_dq;
@@ -94,8 +94,6 @@ namespace unitree {
                 std::vector<double> cmd_q;
                 std::vector<double> cmd_dq;
                 std::vector<double> cmd_tau;
-
-
             };
 
 
