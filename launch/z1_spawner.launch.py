@@ -78,11 +78,21 @@ def launch_setup(context, *args, **kwargs):
             }],
         )
 
+    joint_controller_node = Node(
+        package="controller_manager",
+        executable="spawner",
+        arguments=["position_controller", "-c", "/controller_manager"],
+        parameters=[{
+            "use_sim_time": use_sim_time
+            }]
+        )
+
     notes_to_start = [
         robot_state_publisher_node,
         rviz_node,
         joint_state_broadcaster_spawner,
         controller_manager_node,
+        joint_controller_node,
         ]
     return notes_to_start
 
