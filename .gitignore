@@ -9,3 +9,5 @@ _build/
 *.iws
 
 compile_commands.json
+
+include/unitree_z1_hw_interface/defines.hpp

@@ -42,6 +42,13 @@ set(UNITREE_Z1_SDK_LIB_PATH ${UNITREE_Z1_SDK_PATH}/lib)
 set(UNITREE_Z1_SDK_INCLUDE_PATH ${UNITREE_Z1_SDK_PATH}/include)
 set(UNITREE_Z1_SDK_LIB ${UNITREE_Z1_SDK_LIB_PATH}/libZ1_SDK_${CMAKE_SYSTEM_PROCESSOR}.so)
 
+set(Z1_CONTROLLER_FILE ${CMAKE_CURRENT_BINARY_DIR}/z1_ctrl)
+configure_file(
+    ${CMAKE_CURRENT_LIST_DIR}/include/unitree_z1_hw_interface/defines.hpp.in
+    ${CMAKE_CURRENT_LIST_DIR}/include/unitree_z1_hw_interface/defines.hpp
+    )
+message(STATUS "z1_ctrl full path: ${Z1_CONTROLLER_FILE}")
+
 #  _   ___        __  ___       _             __
 # | | | \ \      / / |_ _|_ __ | |_ ___ _ __ / _| __ _  ___ ___
 # | |_| |\ \ /\ / /   | || '_ \| __/ _ \ '__| |_ / _` |/ __/ _ \
@@ -107,7 +114,6 @@ install(
     FILES ${UNITREE_Z1_SDK_LIB}
     DESTINATION lib
     )
-
 install(
     DIRECTORY include
     DESTINATION include
