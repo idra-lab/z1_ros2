@@ -247,6 +247,15 @@
         </inertial>
     </link>
 
+    <link name="end_effector"/>
+
+    <joint name="end_effect_link" type="fixed">
+        <origin rpy="0 0 0" xyz="0.051 0.0 0.0"/>
+        <parent link="link06"/>
+        <child link="end_effector"/>
+    </joint>
+
+
     <xacro:if value="$(arg with_gripper)">
         <joint name="gripperStator" type="fixed">
             <origin rpy="0 0 0" xyz="0.051 0.0 0.0"/>

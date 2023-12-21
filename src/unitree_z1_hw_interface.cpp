@@ -1,23 +1,26 @@
 #include <cctype>
 #include <cstddef>
+#include <cstdlib>
 #include <Eigen/Core>
+#include <math.h>
 #include <stdexcept>
+#include <stdio.h>
 #include <string>
 #include <unitree_arm_sdk/control/unitreeArm.h>
 #include <unitree_arm_sdk/message/arm_common.h>
 #include <unitree_arm_sdk/model/ArmModel.h>
+#include <unitree_arm_sdk/utilities/loop.h>
 #include <vector>
-#include <stdio.h>
 
+#include <ament_index_cpp/get_package_prefix.hpp>
 #include <hardware_interface/hardware_info.hpp>
 #include <hardware_interface/system_interface.hpp>
 #include <hardware_interface/types/hardware_interface_return_values.hpp>
 #include <hardware_interface/types/hardware_interface_type_values.hpp>
 #include <rclcpp/logging.hpp>
 #include <rclcpp/rclcpp.hpp>
+#include <unitree_z1_hw_interface/defines.hpp>
 #include <unitree_z1_hw_interface/unitree_z1_hw_interface.hpp>
-
-#include "unitree_arm_sdk/utilities/loop.h"
 
 
 using unitree::z1::hw_interface::UnitreeZ1HWInterface;
@@ -32,7 +35,8 @@ using unitree::z1::hw_interface::UnitreeZ1HWInterface;
 
 #define SHOW_DEBUG_MESSAGES
 #define Z1_HWI_LOGGER rclcpp::get_logger("UnitreeZ1HWInterface")
-#define LOG_PERIOD 50
+#define LOG_PERIOD    50
+#define USE_5TH_ORDER_POLYNOMIAL
 #define SHOW_SDK_DATA
 
 typedef Eigen::Matrix<double, 6, 1> Vector6d;
@@ -45,7 +49,7 @@ std::vector<pos_vel_pair> interpolate(const Vector6d& qi,
                                       const Vector6d& qf,
                                       double          dt,
                                       double          tf);
-std::string pretty_vector(const std::vector<double>& vec);
+std::string               pretty_vector(const std::vector<double>& vec);
 
 //   ____                _                   _
 //  / ___|___  _ __  ___| |_ _ __ _   _  ___| |_ ___  _ __ ___
@@ -200,6 +204,42 @@ hardware_interface::CallbackReturn UnitreeZ1HWInterface::on_init(
     rclcpp::Logger logger = Z1_HWI_LOGGER;
     logger.set_level(rclcpp::Logger::Level::Debug);
 #endif
+
+    /*
+     * Create a pipe to count the number of z1_ctrl processes running.
+     * If no process is running, the resulting number of z1_ctrl processes returned by
+     * the shell pipe is 2, thus the controller is started. If one process is running,
+     * the resulting number of z1_ctrl processes returned by the shell pipe is higher
+     * avoiding the controller to be started.
+     */
+    const std::string cmd_num_procs = "ps aux | grep z1_ctrl | wc -l";
+    FILE*             cmd_pipe      = popen(cmd_num_procs.c_str(), "r");
+    int               n_procs;
+    fscanf(cmd_pipe, "%d", &n_procs);
+    pclose(cmd_pipe);
+    RCLCPP_DEBUG(Z1_HWI_LOGGER, "Number of z1_ctrl processes: %d", n_procs);
+
+    if (n_procs <= 2) {
+        RCLCPP_INFO(Z1_HWI_LOGGER, "Starting the controller");
+        const std::string prefix =
+                ament_index_cpp::get_package_prefix("unitree_z1_hw_interface");
+        const std::string ctrl_path = prefix + "/lib/controller";
+        const std::string subcmd    = "cd " + ctrl_path + " && chmod +x ./z1_ctrl" +
+                                   " && ./z1_ctrl && disown";
+        const std::string cmd = "x-terminal-emulator -e '" + subcmd + "' &";
+        int               ok  = system(cmd.c_str());
+        // rclcpp::sleep_for(std::chrono::seconds(1));
+        RCLCPP_DEBUG(Z1_HWI_LOGGER, "Command: %s", cmd.c_str());
+        RCLCPP_DEBUG(Z1_HWI_LOGGER, "Result : %d", ok);
+    }
+
+
+    // const std::string cmd = std::string(Z1_CONTROLLER_FILE);
+    // RCLCPP_INFO(Z1_HWI_LOGGER, "Starting controller with command: %s", cmd.c_str());
+    // system(cmd.c_str());
+    // RCLCPP_INFO(Z1_HWI_LOGGER, "Controller started");
+
+
     RCLCPP_DEBUG(Z1_HWI_LOGGER, "calling on_init()");
     if (hardware_interface::SystemInterface::on_init(hw_info) !=
         hardware_interface::CallbackReturn::SUCCESS) {
@@ -219,14 +259,11 @@ hardware_interface::CallbackReturn UnitreeZ1HWInterface::on_init(
     arm = new UNITREE_ARM::unitreeArm(with_gripper);
     RCLCPP_DEBUG(Z1_HWI_LOGGER, "arm object created");
     arm->sendRecvThread->start();
-    arm->setArmCmd(arm->lowstate->getQ(), arm->lowstate->getQd());
-    arm->backToStart();
     arm->setFsm(UNITREE_ARM::ArmFSMState::PASSIVE);
+    arm->setArmCmd(arm->lowstate->getQ(), arm->lowstate->getQd());
     RCLCPP_INFO(Z1_HWI_LOGGER, "Waiting arm for 1 second");
-    arm->sendRecvThread->shutdown();
-    rclcpp::sleep_for(std::chrono::seconds(1));
-    arm->sendRecvThread->start();
     arm->setFsm(UNITREE_ARM::ArmFSMState::LOWCMD);
+    arm->sendRecvThread->shutdown();
 
     n_joints = hw_info.joints.size();
     rob_q.resize(n_joints);
@@ -289,7 +326,7 @@ hardware_interface::return_type UnitreeZ1HWInterface::read(
 
 #ifdef SHOW_SDK_DATA
     static std::size_t k = 0;
-    if(k++ % LOG_PERIOD == 0) {
+    if (k++ % LOG_PERIOD == 0) {
         RCLCPP_INFO(Z1_HWI_LOGGER, "received q:   %s", pretty_vector(rob_q).c_str());
         RCLCPP_INFO(Z1_HWI_LOGGER, "received dq:  %s", pretty_vector(rob_dq).c_str());
         RCLCPP_INFO(Z1_HWI_LOGGER, "received tau: %s", pretty_vector(rob_tau).c_str());
@@ -310,10 +347,10 @@ hardware_interface::return_type UnitreeZ1HWInterface::write(
 
 #ifdef SHOW_SDK_DATA
     static std::size_t k = 0;
-    if(k++ % LOG_PERIOD == 0) {
-        RCLCPP_INFO(Z1_HWI_LOGGER, "commanded q:   %s", pretty_vector(cmd_q).c_str());
-        RCLCPP_INFO(Z1_HWI_LOGGER, "commanded dq:  %s", pretty_vector(cmd_dq).c_str());
-        RCLCPP_INFO(Z1_HWI_LOGGER, "commanded tau: %s", pretty_vector(cmd_tau).c_str());
+    if (k++ % LOG_PERIOD == 0) {
+        // RCLCPP_INFO(Z1_HWI_LOGGER, "commanded q:   %s", pretty_vector(cmd_q).c_str());
+        // RCLCPP_INFO(Z1_HWI_LOGGER, "commanded dq:  %s", pretty_vector(cmd_dq).c_str());
+        // RCLCPP_INFO(Z1_HWI_LOGGER, "commanded tau: %s", pretty_vector(cmd_tau).c_str());
     }
 #endif
 
@@ -330,9 +367,9 @@ hardware_interface::return_type UnitreeZ1HWInterface::perform_command_mode_switc
         RCLCPP_INFO(Z1_HWI_LOGGER, "No control_mode is specified, leaving unchanged!");
         return hardware_interface::return_type::OK;
     }
-    mystring = start_interfaces[0];
+    mystring      = start_interfaces[0];
     auto slash_id = mystring.find('/');
-    control_mode = mystring.substr(slash_id + 1);
+    control_mode  = mystring.substr(slash_id + 1);
 
     if (control_mode == hardware_interface::HW_IF_POSITION) {
         RCLCPP_INFO(Z1_HWI_LOGGER, "Switching to position control");
@@ -419,15 +456,41 @@ std::vector<pos_vel_pair> interpolate(const Vector6d& qi,
                                       double          dt,
                                       double          tf) {
     std::vector<pos_vel_pair> result;
-    const Vector6d            a_coeff = -2 * (qf - qi) / (tf * tf * tf);
-    const Vector6d            b_coeff = 3 * (qf - qi) / (tf * tf);
-    const Vector6d            c_coeff = Vector6d::Zero();
-    const Vector6d            d_coeff = qi;
+    const Vector6d            delta   = qf - qi;
+    double                    tf_pow2 = pow(tf, 2);
+    double                    tf_pow3 = pow(tf, 3);
+    double                    tf_pow4 = pow(tf, 4);
+    double                    tf_pow5 = pow(tf, 5);
+#ifndef USE_5TH_ORDER_POLYNOMIAL
+    const Vector6d a_coeff = -2 * delta / tf_pow3;
+    const Vector6d b_coeff = 3 * delta / tf_pow2;
+    const Vector6d c_coeff = Vector6d::Zero();
+    const Vector6d d_coeff = qi;
+#else
+    const Vector6d a_coeff = 6 * delta / tf_pow5;
+    const Vector6d b_coeff = -15 * delta / tf_pow4;
+    const Vector6d c_coeff = 10 * delta / tf_pow3;
+    const Vector6d d_coeff = Vector6d::Zero();
+    const Vector6d e_coeff = Vector6d::Zero();
+    const Vector6d f_coeff = qi;
+#endif
 
     Vector6d q_vec, dq_vec;
     for (double t = 0; t < tf; t += dt) {
-        q_vec  = a_coeff * t * t * t + b_coeff * t * t + c_coeff * t + d_coeff;
-        dq_vec = 3 * a_coeff * t * t + 2 * b_coeff * t + c_coeff;
+        const double t_pow2 = pow(t, 2);
+        const double t_pow3 = pow(t, 3);
+        const double t_pow4 = pow(t, 4);
+        const double t_pow5 = pow(t, 5);
+#ifndef USE_5TH_ORDER_POLYNOMIAL
+        q_vec  = a_coeff * t_pow3 + b_coeff * t_pow2 + c_coeff * t + d_coeff;
+        dq_vec = 3 * a_coeff * t_pow2 + 2 * b_coeff * t + c_coeff;
+#else
+        q_vec = a_coeff * t_pow5 + b_coeff * t_pow4 + c_coeff * t_pow3 +
+                d_coeff * t_pow2 + e_coeff * t + f_coeff;
+        dq_vec = 5 * a_coeff * t_pow4 + 4 * b_coeff * t_pow3 + 3 * c_coeff * t_pow2 +
+                 2 * d_coeff * t + e_coeff;
+#endif
+
         result.push_back(std::make_pair(q_vec, dq_vec));
     }
     return result;
@@ -442,11 +505,9 @@ std::vector<pos_vel_pair> interpolate(const Vector6d& qi,
  */
 std::string pretty_vector(const std::vector<double>& vec) {
     std::string result = "[";
-    char temp[20];
+    char        temp[20];
     for (std::size_t i = 0; i < vec.size(); i++) {
-        if (i != 0) {
-            result += ", ";
-        }
+        if (i != 0) { result += ", "; }
         sprintf(temp, "%6.4f", vec[i]);
         result += std::string(temp);
     }

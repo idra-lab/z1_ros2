@@ -98,6 +98,13 @@ def launch_setup(context, *args, **kwargs):
         parameters=[{"use_sim_time": use_sim_time}]
     )
 
+    # cartesian_motion_controller_spawner = Node(
+    #     package="controller_manager",
+    #     executable="spawner",
+    #     arguments=["cartesian_impedance_controller", "-c", "/controller_manager"],
+    #     parameters=[{"use_sim_time": use_sim_time}]
+    # )
+
     motion_control_handle_spawner = Node(
         package="controller_manager",
         executable="spawner",
