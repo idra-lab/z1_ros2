@@ -27,7 +27,7 @@ AllowShortLambdasOnASingleLine: All
 AllowShortLoopsOnASingleLine: True
 AlwaysBreakBeforeMultilineStrings: True
 # AlwaysBreakTemplateDeclarations: True
-BinPackArguments: True
+BinPackArguments: False
 BinPackParameters: False
 BreakBeforeBraces: Attach
 BreakConstructorInitializers: AfterColon

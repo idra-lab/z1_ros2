@@ -8,6 +8,10 @@
 #include <hardware_interface/hardware_info.hpp>
 #include <hardware_interface/system_interface.hpp>
 #include <hardware_interface/types/hardware_interface_return_values.hpp>
+#include <kdl/chain.hpp>
+#include <kdl/chainiksolverpos_nr.hpp>
+#include <kdl/frames_io.hpp>
+#include <kdl/tree.hpp>
 #include <rclcpp/macros.hpp>
 #include <rclcpp_lifecycle/state.hpp>
 
@@ -94,6 +98,13 @@ namespace unitree {
                 std::vector<double> cmd_q;
                 std::vector<double> cmd_dq;
                 std::vector<double> cmd_tau;
+
+                // pinocchio::Model arm_model;
+                KDL::Tree     arm_tree;
+                KDL::Chain    arm_chain;
+                KDL::JntArray arm_q;
+                KDL::JntArray arm_dq;
+                KDL::JntArray arm_ddq;
             };
 
 

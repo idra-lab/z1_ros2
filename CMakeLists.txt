@@ -15,7 +15,12 @@ set(ROS2_REQUIRED_COMPONENTS
     pluginlib
     rclcpp
     rclcpp_lifecycle
+    pinocchio
+    kdl_parser
     )
+# find_package(pinochio REQUIRED)
+
+
 
 foreach(COMPONENT ${ROS2_REQUIRED_COMPONENTS})
     find_package(${COMPONENT} REQUIRED)

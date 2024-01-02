@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <cctype>
 #include <cstddef>
 #include <cstdlib>
@@ -17,11 +18,11 @@
 #include <hardware_interface/system_interface.hpp>
 #include <hardware_interface/types/hardware_interface_return_values.hpp>
 #include <hardware_interface/types/hardware_interface_type_values.hpp>
+#include <kdl/chaindynparam.hpp>
+#include <kdl_parser/kdl_parser.hpp>
 #include <rclcpp/logging.hpp>
 #include <rclcpp/rclcpp.hpp>
-#include <unitree_z1_hw_interface/defines.hpp>
 #include <unitree_z1_hw_interface/unitree_z1_hw_interface.hpp>
-
 
 using unitree::z1::hw_interface::UnitreeZ1HWInterface;
 
@@ -205,6 +206,14 @@ hardware_interface::CallbackReturn UnitreeZ1HWInterface::on_init(
     logger.set_level(rclcpp::Logger::Level::Debug);
 #endif
 
+    RCLCPP_DEBUG(Z1_HWI_LOGGER, "calling on_init()");
+    if (hardware_interface::SystemInterface::on_init(hw_info) !=
+        hardware_interface::CallbackReturn::SUCCESS) {
+        RCLCPP_ERROR(Z1_HWI_LOGGER, "parent on_init() failed");
+        return hardware_interface::CallbackReturn::ERROR;
+    }
+
+
     /*
      * Create a pipe to count the number of z1_ctrl processes running.
      * If no process is running, the resulting number of z1_ctrl processes returned by
@@ -233,37 +242,50 @@ hardware_interface::CallbackReturn UnitreeZ1HWInterface::on_init(
         RCLCPP_DEBUG(Z1_HWI_LOGGER, "Result : %d", ok);
     }
 
-
-    // const std::string cmd = std::string(Z1_CONTROLLER_FILE);
-    // RCLCPP_INFO(Z1_HWI_LOGGER, "Starting controller with command: %s", cmd.c_str());
-    // system(cmd.c_str());
-    // RCLCPP_INFO(Z1_HWI_LOGGER, "Controller started");
-
-
-    RCLCPP_DEBUG(Z1_HWI_LOGGER, "calling on_init()");
-    if (hardware_interface::SystemInterface::on_init(hw_info) !=
-        hardware_interface::CallbackReturn::SUCCESS) {
-        RCLCPP_ERROR(Z1_HWI_LOGGER, "parent on_init() failed");
+    RCLCPP_DEBUG(Z1_HWI_LOGGER, "Setting up KDL chain");
+    if (!kdl_parser::treeFromString(hw_info.original_xml, arm_tree)) {
+        RCLCPP_ERROR(Z1_HWI_LOGGER, "Failed to construct KDL tree from original XML");
         return hardware_interface::CallbackReturn::ERROR;
     }
+    std::string root_link         = "world";
+    std::string end_effector_link = "gripperMover";
+    if (!arm_tree.getChain(root_link, end_effector_link, arm_chain)) {
+        RCLCPP_ERROR(Z1_HWI_LOGGER, "Failed to construct KDL chain from KDL tree");
+        return hardware_interface::CallbackReturn::ERROR;
+    }
+    arm_q.resize(arm_chain.getNrOfJoints());
+    arm_dq.resize(arm_chain.getNrOfJoints());
+    arm_ddq.resize(arm_chain.getNrOfJoints());
+    for (std::size_t i = 0; i < arm_chain.getNrOfJoints(); i++) {
+        arm_q(i)   = 0;
+        arm_dq(i)  = 0;
+        arm_ddq(i) = 0;
+    }
+    RCLCPP_DEBUG(Z1_HWI_LOGGER, "KDL chain setup completed successfully");
 
     std::string gripper_string = hw_info.hardware_parameters.at("gripper");
     to_lower_string(gripper_string);
     with_gripper = gripper_string == "true";
     if (with_gripper) {
-        RCLCPP_INFO(Z1_HWI_LOGGER, "Gripper is enabled");
+        RCLCPP_DEBUG(Z1_HWI_LOGGER, "Gripper is enabled");
     } else {
-        RCLCPP_INFO(Z1_HWI_LOGGER, "Gripper is disabled");
+        RCLCPP_DEBUG(Z1_HWI_LOGGER, "Gripper is disabled");
     }
 
     arm = new UNITREE_ARM::unitreeArm(with_gripper);
-    RCLCPP_DEBUG(Z1_HWI_LOGGER, "arm object created");
+    RCLCPP_DEBUG(Z1_HWI_LOGGER, "Starting communication");
     arm->sendRecvThread->start();
+    RCLCPP_DEBUG(Z1_HWI_LOGGER, "Communication started");
     arm->setFsm(UNITREE_ARM::ArmFSMState::PASSIVE);
     arm->setArmCmd(arm->lowstate->getQ(), arm->lowstate->getQd());
-    RCLCPP_INFO(Z1_HWI_LOGGER, "Waiting arm for 1 second");
     arm->setFsm(UNITREE_ARM::ArmFSMState::LOWCMD);
     arm->sendRecvThread->shutdown();
+    RCLCPP_DEBUG(Z1_HWI_LOGGER, "Communication shutdown");
+
+    RCLCPP_DEBUG(Z1_HWI_LOGGER, "Resizing:");
+    std::size_t kdl_chain_size = arm_chain.getNrOfJoints();
+    RCLCPP_DEBUG(Z1_HWI_LOGGER, "KDL chain size: %lu", kdl_chain_size);
+    RCLCPP_DEBUG(Z1_HWI_LOGGER, "Joint names size: %lu", hw_info.joints.size());
 
     n_joints = hw_info.joints.size();
     rob_q.resize(n_joints);
@@ -283,17 +305,18 @@ UnitreeZ1HWInterface::export_state_interfaces() {
     std::vector<hardware_interface::StateInterface> state_interfaces;
     RCLCPP_INFO(Z1_HWI_LOGGER, "Exporting %lu state interfaces", n_joints);
     for (std::size_t i = 0; i < n_joints; i++) {
-        RCLCPP_DEBUG(Z1_HWI_LOGGER, "Exporting state interface for joint %s",
+        RCLCPP_DEBUG(Z1_HWI_LOGGER,
+                     "Exporting state interface for joint %s",
                      info_.joints[i].name.c_str());
-        state_interfaces.emplace_back(info_.joints[i].name,
-                                      hardware_interface::HW_IF_POSITION, &rob_q[i]);
-        state_interfaces.emplace_back(info_.joints[i].name,
-                                      hardware_interface::HW_IF_VELOCITY, &rob_dq[i]);
+        state_interfaces.emplace_back(
+                info_.joints[i].name, hardware_interface::HW_IF_POSITION, &rob_q[i]);
+        state_interfaces.emplace_back(
+                info_.joints[i].name, hardware_interface::HW_IF_VELOCITY, &rob_dq[i]);
         state_interfaces.emplace_back(info_.joints[i].name,
                                       hardware_interface::HW_IF_ACCELERATION,
                                       &rob_ddq[i]);
-        state_interfaces.emplace_back(info_.joints[i].name,
-                                      hardware_interface::HW_IF_EFFORT, &rob_tau[i]);
+        state_interfaces.emplace_back(
+                info_.joints[i].name, hardware_interface::HW_IF_EFFORT, &rob_tau[i]);
     }
     return state_interfaces;
 };
@@ -303,14 +326,15 @@ UnitreeZ1HWInterface::export_command_interfaces() {
     RCLCPP_INFO(Z1_HWI_LOGGER, "Exporting %lu command interfaces", n_joints);
     std::vector<hardware_interface::CommandInterface> command_interfaces;
     for (std::size_t i = 0; i < n_joints; i++) {
-        RCLCPP_DEBUG(Z1_HWI_LOGGER, "Exporting command interface for joint %s",
+        RCLCPP_DEBUG(Z1_HWI_LOGGER,
+                     "Exporting command interface for joint %s",
                      info_.joints[i].name.c_str());
-        command_interfaces.emplace_back(info_.joints[i].name,
-                                        hardware_interface::HW_IF_POSITION, &cmd_q[i]);
-        command_interfaces.emplace_back(info_.joints[i].name,
-                                        hardware_interface::HW_IF_VELOCITY, &cmd_dq[i]);
-        command_interfaces.emplace_back(info_.joints[i].name,
-                                        hardware_interface::HW_IF_EFFORT, &cmd_tau[i]);
+        command_interfaces.emplace_back(
+                info_.joints[i].name, hardware_interface::HW_IF_POSITION, &cmd_q[i]);
+        command_interfaces.emplace_back(
+                info_.joints[i].name, hardware_interface::HW_IF_VELOCITY, &cmd_dq[i]);
+        command_interfaces.emplace_back(
+                info_.joints[i].name, hardware_interface::HW_IF_EFFORT, &cmd_tau[i]);
     }
     return command_interfaces;
 }
@@ -324,12 +348,29 @@ hardware_interface::return_type UnitreeZ1HWInterface::read(
         rob_tau[i] = arm->lowstate->tau[i];
     }
 
+    std::size_t chain_size = arm_chain.getNrOfJoints();
+    std::size_t n_joints   = std::min(this->n_joints, chain_size);
+    for (std::size_t i = 0; i < std::min(n_joints, chain_size); i++) {
+        arm_q(i)   = arm->lowstate->q[i];
+        arm_dq(i)  = arm->lowstate->dq[i];
+        arm_ddq(i) = arm->lowstate->ddq[i];
+    }
+
 #ifdef SHOW_SDK_DATA
     static std::size_t k = 0;
     if (k++ % LOG_PERIOD == 0) {
-        RCLCPP_INFO(Z1_HWI_LOGGER, "received q:   %s", pretty_vector(rob_q).c_str());
-        RCLCPP_INFO(Z1_HWI_LOGGER, "received dq:  %s", pretty_vector(rob_dq).c_str());
+        KDL::ChainDynParam dyn_param(arm_chain, KDL::Vector(0, 0, -9.81));
+        KDL::JntArray      arm_tau(chain_size);
+        dyn_param.JntToGravity(arm_q, arm_tau);
+        // RCLCPP_INFO(Z1_HWI_LOGGER, "received q:   %s", pretty_vector(rob_q).c_str());
+        // RCLCPP_INFO(Z1_HWI_LOGGER, "received dq:  %s",
+        // pretty_vector(rob_dq).c_str());
         RCLCPP_INFO(Z1_HWI_LOGGER, "received tau: %s", pretty_vector(rob_tau).c_str());
+        std::string tmp = "";
+        for (std::size_t i = 0; i < chain_size; i++) {
+            tmp += std::to_string(arm_tau(i)) + " ";
+        }
+        RCLCPP_INFO(Z1_HWI_LOGGER, "computed tau: %s", tmp.c_str());
     }
 #endif
     arm->sendRecv();
@@ -348,9 +389,10 @@ hardware_interface::return_type UnitreeZ1HWInterface::write(
 #ifdef SHOW_SDK_DATA
     static std::size_t k = 0;
     if (k++ % LOG_PERIOD == 0) {
-        // RCLCPP_INFO(Z1_HWI_LOGGER, "commanded q:   %s", pretty_vector(cmd_q).c_str());
-        // RCLCPP_INFO(Z1_HWI_LOGGER, "commanded dq:  %s", pretty_vector(cmd_dq).c_str());
-        // RCLCPP_INFO(Z1_HWI_LOGGER, "commanded tau: %s", pretty_vector(cmd_tau).c_str());
+        // RCLCPP_INFO(Z1_HWI_LOGGER, "commanded q:   %s",
+        // pretty_vector(cmd_q).c_str()); RCLCPP_INFO(Z1_HWI_LOGGER, "commanded dq: %s",
+        // pretty_vector(cmd_dq).c_str()); RCLCPP_INFO(Z1_HWI_LOGGER, "commanded tau:
+        // %s", pretty_vector(cmd_tau).c_str());
     }
 #endif
 
@@ -437,8 +479,9 @@ void UnitreeZ1HWInterface::shutdown() {
  * @param[in,out] str       The string to be converted.
  */
 static void to_lower_string(std::string& str) {
-    std::transform(str.begin(), str.end(), str.begin(),
-                   [](unsigned char c) { return std::tolower(c); });
+    std::transform(str.begin(), str.end(), str.begin(), [](unsigned char c) {
+        return std::tolower(c);
+    });
 }
 
 /**
