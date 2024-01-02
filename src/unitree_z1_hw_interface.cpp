@@ -4,6 +4,7 @@
 #include <cstdlib>
 #include <Eigen/Core>
 #include <math.h>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -236,7 +237,7 @@ hardware_interface::CallbackReturn UnitreeZ1HWInterface::on_init(
         RCLCPP_DEBUG(Z1_HWI_LOGGER, "Gripper is disabled");
     }
 
-    arm = new UNITREE_ARM::unitreeArm(with_gripper);
+    arm = std::make_unique<UNITREE_ARM::unitreeArm>(with_gripper);
     arm->sendRecvThread->start();
     arm->setFsm(UNITREE_ARM::ArmFSMState::PASSIVE);
     arm->setArmCmd(arm->lowstate->getQ(), arm->lowstate->getQd());

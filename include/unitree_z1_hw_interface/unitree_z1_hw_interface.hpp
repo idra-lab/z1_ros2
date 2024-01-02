@@ -31,7 +31,8 @@ namespace unitree {
     namespace z1 {
         namespace hw_interface {
 
-            using Vector6d = Eigen::Matrix<double, 6, 1>;
+            using Vector6d            = Eigen::Matrix<double, 6, 1>;
+            using unitreeArmUniquePtr = std::unique_ptr<UNITREE_ARM::unitreeArm>;
 
             class UnitreeZ1HWInterface : public hardware_interface::SystemInterface {
             public:
@@ -90,8 +91,8 @@ namespace unitree {
 
 
             private:
-                bool                     with_gripper;
-                UNITREE_ARM::unitreeArm* arm;
+                bool                with_gripper;
+                unitreeArmUniquePtr arm;
 
                 Vector6d cmd_q     = Vector6d::Zero();
                 Vector6d cmd_dq    = Vector6d::Zero();
