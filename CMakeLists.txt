@@ -15,8 +15,6 @@ set(ROS2_REQUIRED_COMPONENTS
     pluginlib
     rclcpp
     rclcpp_lifecycle
-    pinocchio
-    kdl_parser
     )
 # find_package(pinochio REQUIRED)
 
@@ -53,10 +51,6 @@ set(UNITREE_Z1_CONTROLLER_INCLUDE_PATH ${UNITREE_Z1_CONTROLLER_PATH}/include)
 set(UNITREE_Z1_CONTROLLER_LIB ${UNITREE_Z1_CONTROLLER_LIB_PATH}/libZ1_${CMAKE_SYSTEM_PROCESSOR}.so)
 set(Z1_CTRL_EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/z1_ctrl)
 
-configure_file(
-    ${CMAKE_CURRENT_LIST_DIR}/include/unitree_z1_hw_interface/defines.hpp.in
-    ${CMAKE_CURRENT_LIST_DIR}/include/unitree_z1_hw_interface/defines.hpp
-    )
 message(STATUS "z1_ctrl full path: ${Z1_CTRL_EXECUTABLE}")
 
 #  _   ___        __  ___       _             __

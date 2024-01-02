@@ -4,16 +4,12 @@
 #include <cstddef>
 #include <unitree_arm_sdk/control/unitreeArm.h>
 
-#include <hardware_interface/handle.hpp>
-#include <hardware_interface/hardware_info.hpp>
-#include <hardware_interface/system_interface.hpp>
-#include <hardware_interface/types/hardware_interface_return_values.hpp>
-#include <kdl/chain.hpp>
-#include <kdl/chainiksolverpos_nr.hpp>
-#include <kdl/frames_io.hpp>
-#include <kdl/tree.hpp>
-#include <rclcpp/macros.hpp>
-#include <rclcpp_lifecycle/state.hpp>
+#include "hardware_interface/handle.hpp"
+#include "hardware_interface/hardware_info.hpp"
+#include "hardware_interface/system_interface.hpp"
+#include "hardware_interface/types/hardware_interface_return_values.hpp"
+#include "rclcpp/macros.hpp"
+#include "rclcpp_lifecycle/state.hpp"
 
 /*
  * Functions that needs to be implemented:
@@ -45,44 +41,52 @@ namespace unitree {
                 ~UnitreeZ1HWInterface();
 
                 hardware_interface::CallbackReturn on_configure(
-                        const rclcpp_lifecycle::State& prev_state) override;
+                        const rclcpp_lifecycle::State& prev_state
+                ) override;
 
                 hardware_interface::CallbackReturn on_cleanup(
-                        const rclcpp_lifecycle::State& prev_state) override;
+                        const rclcpp_lifecycle::State& prev_state
+                ) override;
 
                 hardware_interface::CallbackReturn on_shutdown(
-                        const rclcpp_lifecycle::State& prev_state) override;
+                        const rclcpp_lifecycle::State& prev_state
+                ) override;
 
                 hardware_interface::CallbackReturn on_activate(
-                        const rclcpp_lifecycle::State& prev_state) override;
+                        const rclcpp_lifecycle::State& prev_state
+                ) override;
 
                 hardware_interface::CallbackReturn on_deactivate(
-                        const rclcpp_lifecycle::State& prev_state) override;
+                        const rclcpp_lifecycle::State& prev_state
+                ) override;
 
                 hardware_interface::CallbackReturn on_error(
-                        const rclcpp_lifecycle::State& prev_state) override;
+                        const rclcpp_lifecycle::State& prev_state
+                ) override;
 
                 hardware_interface::CallbackReturn on_init(
-                        const hardware_interface::HardwareInfo& hw_info) override;
+                        const hardware_interface::HardwareInfo& hw_info
+                ) override;
 
-                std::vector<hardware_interface::StateInterface>
-                export_state_interfaces() override;
+                std::vector<hardware_interface::StateInterface> export_state_interfaces(
+                ) override;
 
                 std::vector<hardware_interface::CommandInterface>
 
                 export_command_interfaces() override;
 
                 hardware_interface::return_type read(
-                        const rclcpp::Time&     time,
-                        const rclcpp::Duration& period) override;
+                        const rclcpp::Time& time, const rclcpp::Duration& period
+                ) override;
 
                 hardware_interface::return_type write(
-                        const rclcpp::Time&     time,
-                        const rclcpp::Duration& period) override;
+                        const rclcpp::Time& time, const rclcpp::Duration& period
+                ) override;
 
                 hardware_interface::return_type perform_command_mode_switch(
                         const std::vector<std::string>& start_interfaces,
-                        const std::vector<std::string>& stop_interfaces) override;
+                        const std::vector<std::string>& stop_interfaces
+                ) override;
 
 
             private:
@@ -98,13 +102,6 @@ namespace unitree {
                 std::vector<double> cmd_q;
                 std::vector<double> cmd_dq;
                 std::vector<double> cmd_tau;
-
-                // pinocchio::Model arm_model;
-                KDL::Tree     arm_tree;
-                KDL::Chain    arm_chain;
-                KDL::JntArray arm_q;
-                KDL::JntArray arm_dq;
-                KDL::JntArray arm_ddq;
             };
 
 
