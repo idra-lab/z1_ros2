@@ -18,8 +18,6 @@
 #include "unitree_arm_sdk/model/ArmModel.h"
 #include "unitree_arm_sdk/utilities/loop.h"
 
-using unitree::z1::hw_interface::UnitreeZ1HWInterface;
-
 
 //  ____            _                 _   _
 // |  _ \  ___  ___| | __ _ _ __ __ _| |_(_) ___  _ __  ___
@@ -34,7 +32,9 @@ using unitree::z1::hw_interface::UnitreeZ1HWInterface;
 #define USE_5TH_ORDER_POLYNOMIAL
 #define SHOW_SDK_DATA
 
-using Vector6d = Eigen::Matrix<double, 6, 1>;
+
+using unitree::z1::hw_interface::UnitreeZ1HWInterface;
+using unitree::z1::hw_interface::Vector6d;
 
 using pos_vel_pair = std::pair<Vector6d, Vector6d>;
 
@@ -243,15 +243,6 @@ hardware_interface::CallbackReturn UnitreeZ1HWInterface::on_init(
     arm->setFsm(UNITREE_ARM::ArmFSMState::LOWCMD);
     arm->sendRecvThread->shutdown();
 
-    n_joints = hw_info.joints.size();
-    rob_q.resize(n_joints);
-    rob_dq.resize(n_joints);
-    rob_ddq.resize(n_joints);
-    rob_tau.resize(n_joints);
-    cmd_q.resize(n_joints);
-    cmd_dq.resize(n_joints);
-    cmd_tau.resize(n_joints);
-
     RCLCPP_DEBUG(Z1_HWI_LOGGER, "on_init() completed successfully");
     return hardware_interface::CallbackReturn::SUCCESS;
 }
@@ -259,31 +250,59 @@ hardware_interface::CallbackReturn UnitreeZ1HWInterface::on_init(
 std::vector<hardware_interface::StateInterface>
 UnitreeZ1HWInterface::export_state_interfaces() {
     std::vector<hardware_interface::StateInterface> state_interfaces;
-    RCLCPP_INFO(Z1_HWI_LOGGER, "Exporting %lu state interfaces", n_joints);
-    for (std::size_t i = 0; i < n_joints; i++) {
+
+    RCLCPP_INFO(Z1_HWI_LOGGER, "Exporting state interfaces for %lu joints", n_joints());
+    for (std::size_t i = 0; i < 6; i++) {
         state_interfaces.emplace_back(
-                info_.joints[i].name, hardware_interface::HW_IF_POSITION, &rob_q[i]
+                info_.joints[i].name, hardware_interface::HW_IF_POSITION, &state_q[i]
         );
         state_interfaces.emplace_back(
-                info_.joints[i].name, hardware_interface::HW_IF_VELOCITY, &rob_dq[i]
+                info_.joints[i].name, hardware_interface::HW_IF_VELOCITY, &state_dq[i]
         );
         state_interfaces.emplace_back(
                 info_.joints[i].name,
                 hardware_interface::HW_IF_ACCELERATION,
-                &rob_ddq[i]
+                &state_ddq[i]
         );
         state_interfaces.emplace_back(
-                info_.joints[i].name, hardware_interface::HW_IF_EFFORT, &rob_tau[i]
+                info_.joints[i].name, hardware_interface::HW_IF_EFFORT, &state_tau[i]
         );
     }
+
+    if (with_gripper) {
+        state_interfaces.emplace_back(
+                info_.joints[6].name,
+                hardware_interface::HW_IF_POSITION,
+                &gripper_state_q
+        );
+        state_interfaces.emplace_back(
+                info_.joints[6].name,
+                hardware_interface::HW_IF_VELOCITY,
+                &gripper_state_dq
+        );
+        state_interfaces.emplace_back(
+                info_.joints[6].name,
+                hardware_interface::HW_IF_ACCELERATION,
+                &gripper_state_ddq
+        );
+        state_interfaces.emplace_back(
+                info_.joints[6].name,
+                hardware_interface::HW_IF_EFFORT,
+                &gripper_state_tau
+        );
+    }
+
     return state_interfaces;
 };
 
 std::vector<hardware_interface::CommandInterface>
 UnitreeZ1HWInterface::export_command_interfaces() {
-    RCLCPP_INFO(Z1_HWI_LOGGER, "Exporting %lu command interfaces", n_joints);
     std::vector<hardware_interface::CommandInterface> command_interfaces;
-    for (std::size_t i = 0; i < n_joints; i++) {
+
+    RCLCPP_INFO(
+            Z1_HWI_LOGGER, "Exporting command interfaces for %lu joints", n_joints()
+    );
+    for (std::size_t i = 0; i < 6; i++) {
         command_interfaces.emplace_back(
                 info_.joints[i].name, hardware_interface::HW_IF_POSITION, &cmd_q[i]
         );
@@ -291,16 +310,31 @@ UnitreeZ1HWInterface::export_command_interfaces() {
                 info_.joints[i].name, hardware_interface::HW_IF_EFFORT, &cmd_tau[i]
         );
     }
+
+    if (with_gripper) {
+        command_interfaces.emplace_back(
+                info_.joints[6].name, hardware_interface::HW_IF_POSITION, &gripper_cmd_q
+        );
+        command_interfaces.emplace_back(
+                info_.joints[6].name, hardware_interface::HW_IF_EFFORT, &gripper_cmd_tau
+        );
+    }
     return command_interfaces;
 }
 
 hardware_interface::return_type UnitreeZ1HWInterface::
         read(const rclcpp::Time& /* time */, const rclcpp::Duration& /* period */) {
-    for (std::size_t i = 0; i < n_joints; i++) {
-        rob_q[i]   = arm->lowstate->q[i];
-        rob_dq[i]  = arm->lowstate->dq[i];
-        rob_ddq[i] = arm->lowstate->ddq[i];
-        rob_tau[i] = arm->lowstate->tau[i];
+    for (std::size_t i = 0; i < 6; i++) {
+        state_q[i]   = arm->lowstate->q[i];
+        state_dq[i]  = arm->lowstate->dq[i];
+        state_ddq[i] = arm->lowstate->ddq[i];
+        state_tau[i] = arm->lowstate->tau[i];
+    }
+    if (with_gripper) {
+        gripper_state_q   = arm->lowstate->q[6];
+        gripper_state_dq  = arm->lowstate->dq[6];
+        gripper_state_ddq = arm->lowstate->ddq[6];
+        gripper_state_tau = arm->lowstate->tau[6];
     }
     arm->sendRecv();
     return hardware_interface::return_type::OK;
@@ -308,10 +342,15 @@ hardware_interface::return_type UnitreeZ1HWInterface::
 
 hardware_interface::return_type UnitreeZ1HWInterface::
         write(const rclcpp::Time& /* time */, const rclcpp::Duration& /* period */) {
-    for (std::size_t i = 0; i < n_joints; i++) {
+    for (std::size_t i = 0; i < 6; i++) {
         arm->lowcmd->q[i]   = cmd_q[i];
         arm->lowcmd->dq[i]  = cmd_dq[i];
         arm->lowcmd->tau[i] = cmd_tau[i];
+    }
+    if (with_gripper) {
+        arm->lowcmd->q[6]   = gripper_cmd_q;
+        arm->lowcmd->dq[6]  = gripper_cmd_dq;
+        arm->lowcmd->tau[6] = gripper_cmd_tau;
     }
     arm->sendRecv();
     return hardware_interface::return_type::OK;
@@ -383,6 +422,8 @@ void UnitreeZ1HWInterface::shutdown() {
     arm->sendRecvThread->shutdown();
     RCLCPP_DEBUG(Z1_HWI_LOGGER, "Hardware interface shut down successfully");
 }
+
+std::size_t UnitreeZ1HWInterface::n_joints() const { return with_gripper ? 7 : 6; }
 
 //  ____  _        _   _
 // / ___|| |_ __ _| |_(_) ___ ___

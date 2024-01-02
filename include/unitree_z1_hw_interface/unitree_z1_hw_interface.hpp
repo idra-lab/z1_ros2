@@ -11,9 +11,7 @@
 #include "rclcpp/macros.hpp"
 #include "rclcpp_lifecycle/state.hpp"
 
-/*
- * Functions that needs to be implemented:
- *  - Lifecycle:
+/* Functions that needs to be implemented: - Lifecycle:
  *      on_configure
  *      on_shutdown
  *      on_activate
@@ -32,6 +30,8 @@
 namespace unitree {
     namespace z1 {
         namespace hw_interface {
+
+            using Vector6d = Eigen::Matrix<double, 6, 1>;
 
             class UnitreeZ1HWInterface : public hardware_interface::SystemInterface {
             public:
@@ -91,17 +91,26 @@ namespace unitree {
 
             private:
                 bool                     with_gripper;
-                std::size_t              n_joints;
-                void                     shutdown();
                 UNITREE_ARM::unitreeArm* arm;
 
-                std::vector<double> rob_q;
-                std::vector<double> rob_dq;
-                std::vector<double> rob_ddq;
-                std::vector<double> rob_tau;
-                std::vector<double> cmd_q;
-                std::vector<double> cmd_dq;
-                std::vector<double> cmd_tau;
+                Vector6d cmd_q     = Vector6d::Zero();
+                Vector6d cmd_dq    = Vector6d::Zero();
+                Vector6d cmd_tau   = Vector6d::Zero();
+                Vector6d state_q   = Vector6d::Zero();
+                Vector6d state_dq  = Vector6d::Zero();
+                Vector6d state_ddq = Vector6d::Zero();
+                Vector6d state_tau = Vector6d::Zero();
+
+                double gripper_cmd_q     = 0;
+                double gripper_cmd_dq    = 0;
+                double gripper_cmd_tau   = 0;
+                double gripper_state_q   = 0;
+                double gripper_state_dq  = 0;
+                double gripper_state_ddq = 0;
+                double gripper_state_tau = 0;
+
+                void        shutdown();
+                std::size_t n_joints() const;
             };
 
 
