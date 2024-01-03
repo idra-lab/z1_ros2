@@ -14,10 +14,14 @@
     with_gripper:=true
     ">
 
+  <!-- <ros2_control name="${name}" type="system"> -->
+
     <ros2_control name="${name}" type="system">
+
       <hardware>
         <xacro:if value="${sim_ignition}">
-          <plugin> ign_ros2_control/IgnitionSystem </plugin>
+        <plugin>ign_ros2_control/IgnitionSystem</plugin>
+            <!-- <plugin>gz_ros2_control/GazeboSimSystem</plugin>-->
         </xacro:if>
         <xacro:unless value="${sim_ignition}">
           <plugin>unitree_z1_hw_interface/UnitreeZ1HWInterface</plugin>
