@@ -11,112 +11,94 @@
 #include "rclcpp/macros.hpp"
 #include "rclcpp_lifecycle/state.hpp"
 
-/* Functions that needs to be implemented: - Lifecycle:
- *      on_configure
- *      on_shutdown
- *      on_activate
- *      on_deactivate
- *      on_error
- *  - HW interface:
- *      on_init
- *      export_state_interfaces
- *      export_command_interfaces
- *      prepare_command_mode_switch (opt)
- *      perform_command_mode_switch (opt)
- *      read
- *      write
- */
-
 namespace unitree {
     namespace z1 {
-        namespace hw_interface {
 
-            using Vector6d            = Eigen::Matrix<double, 6, 1>;
-            using unitreeArmUniquePtr = std::unique_ptr<UNITREE_ARM::unitreeArm>;
+        using Vector6d            = Eigen::Matrix<double, 6, 1>;
+        using unitreeArmUniquePtr = std::unique_ptr<UNITREE_ARM::unitreeArm>;
 
-            class UnitreeZ1HWInterface : public hardware_interface::SystemInterface {
-            public:
-                RCLCPP_SHARED_PTR_DEFINITIONS(UnitreeZ1HWInterface)
+        class Z1HwInterface : public hardware_interface::SystemInterface {
+        public:
+            RCLCPP_SHARED_PTR_DEFINITIONS(Z1HwInterface)
 
-                UnitreeZ1HWInterface();
-                ~UnitreeZ1HWInterface();
+            Z1HwInterface();
+            ~Z1HwInterface();
 
-                hardware_interface::CallbackReturn on_configure(
-                        const rclcpp_lifecycle::State& prev_state
-                ) override;
+            hardware_interface::CallbackReturn on_configure(
+                    const rclcpp_lifecycle::State& prev_state
+            ) override;
 
-                hardware_interface::CallbackReturn on_cleanup(
-                        const rclcpp_lifecycle::State& prev_state
-                ) override;
+            hardware_interface::CallbackReturn on_cleanup(
+                    const rclcpp_lifecycle::State& prev_state
+            ) override;
 
-                hardware_interface::CallbackReturn on_shutdown(
-                        const rclcpp_lifecycle::State& prev_state
-                ) override;
+            hardware_interface::CallbackReturn on_shutdown(
+                    const rclcpp_lifecycle::State& prev_state
+            ) override;
 
-                hardware_interface::CallbackReturn on_activate(
-                        const rclcpp_lifecycle::State& prev_state
-                ) override;
+            hardware_interface::CallbackReturn on_activate(
+                    const rclcpp_lifecycle::State& prev_state
+            ) override;
 
-                hardware_interface::CallbackReturn on_deactivate(
-                        const rclcpp_lifecycle::State& prev_state
-                ) override;
+            hardware_interface::CallbackReturn on_deactivate(
+                    const rclcpp_lifecycle::State& prev_state
+            ) override;
 
-                hardware_interface::CallbackReturn on_error(
-                        const rclcpp_lifecycle::State& prev_state
-                ) override;
+            hardware_interface::CallbackReturn on_error(
+                    const rclcpp_lifecycle::State& prev_state
+            ) override;
 
-                hardware_interface::CallbackReturn on_init(
-                        const hardware_interface::HardwareInfo& hw_info
-                ) override;
+            hardware_interface::CallbackReturn on_init(
+                    const hardware_interface::HardwareInfo& hw_info
+            ) override;
 
-                std::vector<hardware_interface::StateInterface> export_state_interfaces(
-                ) override;
+            std::vector<hardware_interface::StateInterface> export_state_interfaces(
+            ) override;
 
-                std::vector<hardware_interface::CommandInterface>
+            std::vector<hardware_interface::CommandInterface>
 
-                export_command_interfaces() override;
+            export_command_interfaces() override;
 
-                hardware_interface::return_type read(
-                        const rclcpp::Time& time, const rclcpp::Duration& period
-                ) override;
+            hardware_interface::return_type read(
+                    const rclcpp::Time& time, const rclcpp::Duration& period
+            ) override;
 
-                hardware_interface::return_type write(
-                        const rclcpp::Time& time, const rclcpp::Duration& period
-                ) override;
+            hardware_interface::return_type write(
+                    const rclcpp::Time& time, const rclcpp::Duration& period
+            ) override;
 
-                hardware_interface::return_type perform_command_mode_switch(
-                        const std::vector<std::string>& start_interfaces,
-                        const std::vector<std::string>& stop_interfaces
-                ) override;
-
-
-            private:
-                bool                with_gripper;
-                unitreeArmUniquePtr arm;
-
-                Vector6d cmd_q     = Vector6d::Zero();
-                Vector6d cmd_dq    = Vector6d::Zero();
-                Vector6d cmd_tau   = Vector6d::Zero();
-                Vector6d state_q   = Vector6d::Zero();
-                Vector6d state_dq  = Vector6d::Zero();
-                Vector6d state_ddq = Vector6d::Zero();
-                Vector6d state_tau = Vector6d::Zero();
-
-                double gripper_cmd_q     = 0;
-                double gripper_cmd_dq    = 0;
-                double gripper_cmd_tau   = 0;
-                double gripper_state_q   = 0;
-                double gripper_state_dq  = 0;
-                double gripper_state_ddq = 0;
-                double gripper_state_tau = 0;
-
-                void        shutdown();
-                std::size_t n_joints() const;
-            };
+            hardware_interface::return_type perform_command_mode_switch(
+                    const std::vector<std::string>& start_interfaces,
+                    const std::vector<std::string>& stop_interfaces
+            ) override;
 
 
-        }  // namespace hw_interface
-    }      // namespace z1
+        private:
+            bool                with_gripper;
+            unitreeArmUniquePtr arm;
+
+            Vector6d cmd_q     = Vector6d::Zero();
+            Vector6d cmd_dq    = Vector6d::Zero();
+            Vector6d cmd_tau   = Vector6d::Zero();
+            Vector6d state_q   = Vector6d::Zero();
+            Vector6d state_dq  = Vector6d::Zero();
+            Vector6d state_ddq = Vector6d::Zero();
+            Vector6d state_tau = Vector6d::Zero();
+
+            double gripper_cmd_q     = 0;
+            double gripper_cmd_dq    = 0;
+            double gripper_cmd_tau   = 0;
+            double gripper_state_q   = 0;
+            double gripper_state_dq  = 0;
+            double gripper_state_ddq = 0;
+            double gripper_state_tau = 0;
+
+            void        shutdown();
+            std::size_t n_joints() const;
+        };
+
+
+    }  // namespace z1
 }  // namespace unitree
 
 #endif  // UNITREE_Z1_HW_INTERFACE_HPP__

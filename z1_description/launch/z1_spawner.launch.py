@@ -149,7 +149,7 @@ def launch_setup(context, *args, **kwargs):
         arguments=[
             "-d",
             os.path.join(
-                get_package_share_path("unitree_z1_hw_interface"), "rviz", "z1.rviz"
+                get_package_share_path("z1_description"), "rviz", "z1.rviz"
                 )
             ],
         condition=IfCondition(rviz),
@@ -222,7 +222,7 @@ def launch_setup(context, *args, **kwargs):
 
 
 def generate_launch_description():
-    package_name = "unitree_z1_hw_interface"
+    package_name = "z1_description"
     declared_arguments = []
 
     pkg_prefix_dir = get_package_prefix(package_name)

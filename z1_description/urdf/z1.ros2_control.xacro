@@ -24,7 +24,7 @@
             <!-- <plugin>gz_ros2_control/GazeboSimSystem</plugin>-->
         </xacro:if>
         <xacro:unless value="${sim_ignition}">
-          <plugin>unitree_z1_hw_interface/UnitreeZ1HWInterface</plugin>
+          <plugin>z1_hw_interface/Z1HwInterface</plugin>
           <param name="gripper">${with_gripper}</param>
           <!-- add other necessary parameters here -->
         </xacro:unless>

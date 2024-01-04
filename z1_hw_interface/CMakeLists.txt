@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.8)
-project(unitree_z1_hw_interface)
+project(z1_hw_interface)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
@@ -16,19 +16,10 @@ set(ROS2_REQUIRED_COMPONENTS
     rclcpp
     rclcpp_lifecycle
     )
-# find_package(pinochio REQUIRED)
-
-
 
 foreach(COMPONENT ${ROS2_REQUIRED_COMPONENTS})
     find_package(${COMPONENT} REQUIRED)
 endforeach()
-
-
-function(print_variable VAR)
-    message(STATUS "${VAR} = ${${VAR}}")
-endfunction()
-
 
 #  _   _       _ _                   ____       _
 # | | | |_ __ (_) |_ _ __ ___  ___  / ___|  ___| |_ _   _ _ __
@@ -50,8 +41,6 @@ set(UNITREE_Z1_CONTROLLER_LIB_PATH ${UNITREE_Z1_CONTROLLER_PATH}/lib)
 set(UNITREE_Z1_CONTROLLER_INCLUDE_PATH ${UNITREE_Z1_CONTROLLER_PATH}/include)
 set(UNITREE_Z1_CONTROLLER_LIB ${UNITREE_Z1_CONTROLLER_LIB_PATH}/libZ1_${CMAKE_SYSTEM_PROCESSOR}.so)
 set(Z1_CTRL_EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/z1_ctrl)
-
-message(STATUS "z1_ctrl full path: ${Z1_CTRL_EXECUTABLE}")
 
 #  _   ___        __  ___       _             __
 # | | | \ \      / / |_ _|_ __ | |_ ___ _ __ / _| __ _  ___ ___
@@ -78,7 +67,6 @@ target_include_directories(
     ${UNITREE_Z1_SDK_INCLUDE_PATH}
     ${EIGEN3_INCLUDE_DIRS}
     )
-print_variable(EIGEN3_INCLUDE_DIRS)
 target_link_libraries(
     ${PROJECT_NAME}
     PUBLIC
@@ -130,11 +118,7 @@ install(
     DIRECTORY include
     DESTINATION include
     )
-install(
-    DIRECTORY launch config urdf meshes rviz
-    DESTINATION share/${PROJECT_NAME}
-    )
-
 ament_export_targets(export_${PROJECT_NAME} HAS_LIBRARY_TARGET)
 ament_export_dependencies(${ROS2_REQUIRED_COMPONENTS})
+
 ament_package()

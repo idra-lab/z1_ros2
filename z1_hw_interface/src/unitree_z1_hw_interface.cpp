@@ -28,14 +28,14 @@
 //
 
 #define SHOW_DEBUG_MESSAGES
-#define Z1_HWI_LOGGER rclcpp::get_logger("UnitreeZ1HWInterface")
+#define Z1_HWI_LOGGER rclcpp::get_logger("Z1HwInterface")
 #define LOG_PERIOD    50
 #define USE_5TH_ORDER_POLYNOMIAL
 #define SHOW_SDK_DATA
 
 
-using unitree::z1::hw_interface::UnitreeZ1HWInterface;
-using unitree::z1::hw_interface::Vector6d;
+using unitree::z1::Vector6d;
+using unitree::z1::Z1HwInterface;
 
 using pos_vel_pair = std::pair<Vector6d, Vector6d>;
 
@@ -52,12 +52,12 @@ std::vector<pos_vel_pair> interpolate(
 //  \____\___/|_| |_|___/\__|_|   \__,_|\___|\__\___/|_|  |___/
 //
 
-UnitreeZ1HWInterface::UnitreeZ1HWInterface() {
-    rclcpp::on_shutdown(std::bind(&UnitreeZ1HWInterface::shutdown, this));
+Z1HwInterface::Z1HwInterface() {
+    rclcpp::on_shutdown(std::bind(&Z1HwInterface::shutdown, this));
     // TODO
 }
 
-UnitreeZ1HWInterface::~UnitreeZ1HWInterface() {
+Z1HwInterface::~Z1HwInterface() {
     // TODO
 }
 
@@ -82,7 +82,7 @@ UnitreeZ1HWInterface::~UnitreeZ1HWInterface() {
 /**
  * This function should setup the communication with the hardware.
  */
-hardware_interface::CallbackReturn UnitreeZ1HWInterface::on_configure(
+hardware_interface::CallbackReturn Z1HwInterface::on_configure(
         const rclcpp_lifecycle::State& prev_state
 ) {
     RCLCPP_DEBUG(Z1_HWI_LOGGER, "calling on_configure()");
@@ -100,7 +100,7 @@ hardware_interface::CallbackReturn UnitreeZ1HWInterface::on_configure(
  * This function should clean up the communication with the hardware and deactivate it.
  * Opposite of on_configure.
  */
-hardware_interface::CallbackReturn UnitreeZ1HWInterface::on_cleanup(
+hardware_interface::CallbackReturn Z1HwInterface::on_cleanup(
         const rclcpp_lifecycle::State& prev_state
 ) {
     RCLCPP_DEBUG(Z1_HWI_LOGGER, "calling on_cleanup()");
@@ -122,14 +122,14 @@ hardware_interface::CallbackReturn UnitreeZ1HWInterface::on_cleanup(
  *       shutdown the hardware.
  */
 hardware_interface::CallbackReturn
-UnitreeZ1HWInterface::on_shutdown(const rclcpp_lifecycle::State& /* prev_state */) {
+Z1HwInterface::on_shutdown(const rclcpp_lifecycle::State& /* prev_state */) {
     return hardware_interface::CallbackReturn::SUCCESS;
 }
 
 /**
  * This function should activate the hardware.
  */
-hardware_interface::CallbackReturn UnitreeZ1HWInterface::on_activate(
+hardware_interface::CallbackReturn Z1HwInterface::on_activate(
         const rclcpp_lifecycle::State& prev_state
 ) {
     RCLCPP_DEBUG(Z1_HWI_LOGGER, "calling on_activate()");
@@ -145,7 +145,7 @@ hardware_interface::CallbackReturn UnitreeZ1HWInterface::on_activate(
 /**
  * This function should deactivate the hardware.
  */
-hardware_interface::CallbackReturn UnitreeZ1HWInterface::on_deactivate(
+hardware_interface::CallbackReturn Z1HwInterface::on_deactivate(
         const rclcpp_lifecycle::State& prev_state
 ) {
     RCLCPP_DEBUG(Z1_HWI_LOGGER, "calling on_deactivate()");
@@ -162,7 +162,7 @@ hardware_interface::CallbackReturn UnitreeZ1HWInterface::on_deactivate(
 /**
  * This function should handle errors.
  */
-hardware_interface::CallbackReturn UnitreeZ1HWInterface::on_error(
+hardware_interface::CallbackReturn Z1HwInterface::on_error(
         const rclcpp_lifecycle::State& prev_state
 ) {
     RCLCPP_DEBUG(Z1_HWI_LOGGER, "called on_error()");
@@ -187,7 +187,7 @@ hardware_interface::CallbackReturn UnitreeZ1HWInterface::on_error(
  * This function is responsible to initialize parameters coming from the URDF file
  * through "hw_info".
  */
-hardware_interface::CallbackReturn UnitreeZ1HWInterface::on_init(
+hardware_interface::CallbackReturn Z1HwInterface::on_init(
         const hardware_interface::HardwareInfo& hw_info
 ) {
 #ifdef SHOW_DEBUG_MESSAGES
@@ -248,8 +248,8 @@ hardware_interface::CallbackReturn UnitreeZ1HWInterface::on_init(
     return hardware_interface::CallbackReturn::SUCCESS;
 }
 
-std::vector<hardware_interface::StateInterface>
-UnitreeZ1HWInterface::export_state_interfaces() {
+std::vector<hardware_interface::StateInterface> Z1HwInterface::export_state_interfaces(
+) {
     std::vector<hardware_interface::StateInterface> state_interfaces;
 
     RCLCPP_INFO(Z1_HWI_LOGGER, "Exporting state interfaces for %lu joints", n_joints());
@@ -297,7 +297,7 @@ UnitreeZ1HWInterface::export_state_interfaces() {
 };
 
 std::vector<hardware_interface::CommandInterface>
-UnitreeZ1HWInterface::export_command_interfaces() {
+Z1HwInterface::export_command_interfaces() {
     std::vector<hardware_interface::CommandInterface> command_interfaces;
 
     RCLCPP_INFO(
@@ -323,7 +323,7 @@ UnitreeZ1HWInterface::export_command_interfaces() {
     return command_interfaces;
 }
 
-hardware_interface::return_type UnitreeZ1HWInterface::
+hardware_interface::return_type Z1HwInterface::
         read(const rclcpp::Time& /* time */, const rclcpp::Duration& /* period */) {
     for (std::size_t i = 0; i < 6; i++) {
         state_q[i]   = arm->lowstate->q[i];
@@ -341,7 +341,7 @@ hardware_interface::return_type UnitreeZ1HWInterface::
     return hardware_interface::return_type::OK;
 }
 
-hardware_interface::return_type UnitreeZ1HWInterface::
+hardware_interface::return_type Z1HwInterface::
         write(const rclcpp::Time& /* time */, const rclcpp::Duration& /* period */) {
     for (std::size_t i = 0; i < 6; i++) {
         arm->lowcmd->q[i]   = cmd_q[i];
@@ -357,7 +357,7 @@ hardware_interface::return_type UnitreeZ1HWInterface::
     return hardware_interface::return_type::OK;
 }
 
-hardware_interface::return_type UnitreeZ1HWInterface::perform_command_mode_switch(
+hardware_interface::return_type Z1HwInterface::perform_command_mode_switch(
         const std::vector<std::string>& start_interfaces,
         const std::vector<std::string>& /* stop_interfaces */
 ) {
@@ -400,7 +400,7 @@ hardware_interface::return_type UnitreeZ1HWInterface::perform_command_mode_switc
 // |_|   |_|  |_| \_/ \__,_|\__\___|
 //
 
-void UnitreeZ1HWInterface::shutdown() {
+void Z1HwInterface::shutdown() {
     RCLCPP_INFO(Z1_HWI_LOGGER, "Shutting down the hardware interface");
     arm->lowcmd->setControlGain();
     Vector6d qi = Vector6d::Zero();
@@ -424,7 +424,7 @@ void UnitreeZ1HWInterface::shutdown() {
     RCLCPP_DEBUG(Z1_HWI_LOGGER, "Hardware interface shut down successfully");
 }
 
-std::size_t UnitreeZ1HWInterface::n_joints() const { return with_gripper ? 7 : 6; }
+std::size_t Z1HwInterface::n_joints() const { return with_gripper ? 7 : 6; }
 
 //  ____  _        _   _
 // / ___|| |_ __ _| |_(_) ___ ___
@@ -506,7 +506,4 @@ std::vector<pos_vel_pair> interpolate(
 //            |_|
 #include <pluginlib/class_list_macros.hpp>
 
-PLUGINLIB_EXPORT_CLASS(
-        unitree::z1::hw_interface::UnitreeZ1HWInterface,
-        hardware_interface::SystemInterface
-);
+PLUGINLIB_EXPORT_CLASS(unitree::z1::Z1HwInterface, hardware_interface::SystemInterface);

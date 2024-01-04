@@ -4,14 +4,14 @@
 
     <xacro:arg name="name" default="z1" />
     <xacro:arg name="prefix" default="" />
-    <xacro:arg name="simulation_controllers" default="$(find unitree_z1_hw_interface)/config/z1_controllers.yaml" />
+    <xacro:arg name="simulation_controllers" default="$(find z1_description)/config/z1_controllers.yaml" />
     <xacro:arg name="sim_ignition" default="true" />
     <xacro:arg name="with_gripper" default="true"/>
 
-    <xacro:include filename="$(find unitree_z1_hw_interface)/urdf/const.xacro"/>
-    <!-- <xacro:include filename="$(find unitree_z1_hw_interface)/urdf/gazebo.xacro"/> -->
-    <!-- <xacro:include filename="$(find unitree_z1_hw_interface)/urdf/transmission.xacro"/> -->
-    <xacro:include filename="$(find unitree_z1_hw_interface)/urdf/z1.ros2_control.xacro"/>
+    <xacro:include filename="$(find z1_description)/urdf/const.xacro"/>
+    <!-- <xacro:include filename="$(find z1_description)/urdf/gazebo.xacro"/> -->
+    <!-- <xacro:include filename="$(find z1_description)/urdf/transmission.xacro"/> -->
+    <xacro:include filename="$(find z1_description)/urdf/z1.ros2_control.xacro"/>
     <xacro:z1_ros2_control
     name="$(arg name)"
     prefix="$(arg prefix)"
@@ -31,7 +31,7 @@
         <visual>
             <origin rpy="0 0 0" xyz="0 0 0"/>
             <geometry>
-                <mesh filename="package://unitree_z1_hw_interface/meshes/visual/z1_Link00.dae" scale="1 1 1"/>
+                <mesh filename="package://z1_description/meshes/visual/z1_Link00.dae" scale="1 1 1"/>
             </geometry>
         </visual>
         <collision>
@@ -63,7 +63,7 @@
         <visual>
             <origin rpy="0 0 0" xyz="0 0 0"/>
             <geometry>
-                <mesh filename="package://unitree_z1_hw_interface/meshes/visual/z1_Link01.dae" scale="1 1 1"/>
+                <mesh filename="package://z1_description/meshes/visual/z1_Link01.dae" scale="1 1 1"/>
             </geometry>
         </visual>
         <inertial>
@@ -89,7 +89,7 @@
         <visual>
             <origin rpy="0 0 0" xyz="0 0 0"/>
             <geometry>
-                <mesh filename="package://unitree_z1_hw_interface/meshes/visual/z1_Link02.dae" scale="1 1 1"/>
+                <mesh filename="package://z1_description/meshes/visual/z1_Link02.dae" scale="1 1 1"/>
             </geometry>
         </visual>
         <collision>
@@ -133,7 +133,7 @@
         <visual>
             <origin rpy="0 0 0" xyz="0 0 0"/>
             <geometry>
-                <mesh filename="package://unitree_z1_hw_interface/meshes/visual/z1_Link03.dae" scale="1 1 1"/>
+                <mesh filename="package://z1_description/meshes/visual/z1_Link03.dae" scale="1 1 1"/>
             </geometry>
         </visual>
         <collision>
@@ -171,7 +171,7 @@
         <visual>
             <origin rpy="0 0 0" xyz="0 0 0"/>
             <geometry>
-                <mesh filename="package://unitree_z1_hw_interface/meshes/visual/z1_Link04.dae" scale="1 1 1"/>
+                <mesh filename="package://z1_description/meshes/visual/z1_Link04.dae" scale="1 1 1"/>
             </geometry>
         </visual>
         <collision>
@@ -203,7 +203,7 @@
         <visual>
             <origin rpy="0 0 0" xyz="0 0 0"/>
             <geometry>
-                <mesh filename="package://unitree_z1_hw_interface/meshes/visual/z1_Link05.dae" scale="1 1 1"/>
+                <mesh filename="package://z1_description/meshes/visual/z1_Link05.dae" scale="1 1 1"/>
             </geometry>
         </visual>
         <inertial>
@@ -229,7 +229,7 @@
         <visual>
             <origin rpy="0 0 0" xyz="0 0 0"/>
             <geometry>
-                <mesh filename="package://unitree_z1_hw_interface/meshes/visual/z1_Link06.dae" scale="1 1 1"/>
+                <mesh filename="package://z1_description/meshes/visual/z1_Link06.dae" scale="1 1 1"/>
             </geometry>
         </visual>
         <collision>
@@ -267,12 +267,12 @@
         <link name="gripperStator">
             <visual>
                 <geometry>
-                    <mesh filename="package://unitree_z1_hw_interface/meshes/visual/z1_GripperStator.dae" scale="1 1 1"/>
+                    <mesh filename="package://z1_description/meshes/visual/z1_GripperStator.dae" scale="1 1 1"/>
                 </geometry>
             </visual>
             <collision>
                 <geometry>
-                    <mesh filename="package://unitree_z1_hw_interface/meshes/collision/z1_GripperStator.STL" scale="1 1 1"/>
+                    <mesh filename="package://z1_description/meshes/collision/z1_GripperStator.STL" scale="1 1 1"/>
                 </geometry>
             </collision>
             <inertial>
@@ -297,12 +297,12 @@
         <link name="gripperMover">
             <visual>
                 <geometry>
-                    <mesh filename="package://unitree_z1_hw_interface/meshes/visual/z1_GripperMover.dae" scale="1 1 1"/>
+                    <mesh filename="package://z1_description/meshes/visual/z1_GripperMover.dae" scale="1 1 1"/>
                 </geometry>
             </visual>
             <collision>
                 <geometry>
-                    <mesh filename="package://unitree_z1_hw_interface/meshes/collision/z1_GripperMover.STL" scale="1 1 1"/>
+                    <mesh filename="package://z1_description/meshes/collision/z1_GripperMover.STL" scale="1 1 1"/>
                 </geometry>
             </collision>
             <inertial>
