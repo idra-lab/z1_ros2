@@ -38,7 +38,9 @@ def launch_setup(context, *args, **kwargs):
     print("Retrieved launch configurations")
     use_ignition = sim_ignition == "true"
     use_sim_time = use_ignition
-    control_name = "IgnitionSystem" if use_ignition else "z1"
+    # control_name = "IgnitionSimSystem" if use_ignition else "z1"
+    control_name = "MySystem" if use_ignition else "z1"
+    # Working: control_name = "IgnitionSystem" if use_ignition else "z1"
 
 
     print("PRocessing xacro")
@@ -68,7 +70,9 @@ def launch_setup(context, *args, **kwargs):
     controller_manager_node = Node(
         package="controller_manager",
         executable="ros2_control_node",
-        parameters=[robot_description, controllers, {
+        parameters=[
+            robot_description,
+            controllers, {
             "use_sim_time": use_sim_time
             }],
         remappings=[
@@ -97,10 +101,26 @@ def launch_setup(context, *args, **kwargs):
             }]
         )
 
+    torque_controller_node = Node(
+        package="controller_manager",
+        executable="spawner",
+        arguments=["torque_controller", "-c", "/controller_manager"],
+        parameters=[{
+            "use_sim_time": use_sim_time
+            }]
+        )
+
     cartesian_motion_controller_spawner = Node(
         package="controller_manager",
         executable="spawner",
         arguments=["cartesian_motion_controller", "-c", "/controller_manager"],
+        parameters=[{"use_sim_time": use_sim_time}]
+    )
+
+    impedance_controller_spawner = Node(
+        package="controller_manager",
+        executable="spawner",
+        arguments=["cartesian_impedance_controller", "-c", "/controller_manager"],
         parameters=[{"use_sim_time": use_sim_time}]
     )
 
@@ -114,8 +134,10 @@ def launch_setup(context, *args, **kwargs):
 
     controller_list = [
         joint_state_broadcaster_spawner,
+        impedance_controller_spawner,
         # joint_controller_node,
-        cartesian_motion_controller_spawner,
+        torque_controller_node,
+        # cartesian_motion_controller_spawner,
         motion_control_handle_spawner,
         ]
 
@@ -148,6 +170,14 @@ def launch_setup(context, *args, **kwargs):
         condition=IfCondition(sim_ignition),
     )
 
+    print("Igntion bridge")
+    ignition_bridge = Node(
+        package="ros_ign_bridge",
+        executable="parameter_bridge",
+        output="screen",
+        condition=IfCondition(sim_ignition),
+        )
+
 
 
     # ign_gazebo_path = get_package_share_directory("ros_ign_gazebo")
@@ -172,7 +202,7 @@ def launch_setup(context, *args, **kwargs):
 
     print("Setup controller delay")
     controller_delay = TimerAction(
-            period=5.0,
+            period=3.0,
             actions=[*controller_list],
             )
 
@@ -185,6 +215,7 @@ def launch_setup(context, *args, **kwargs):
         delay_rviz,
         ignition_spawn_entity,
         ignition_node,
+        # ignition_bridge,
         ]
     return notes_to_start
 

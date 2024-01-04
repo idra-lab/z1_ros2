@@ -343,7 +343,9 @@
         <!-- <plugin filename="ign_ros2_control-system" name="ign_ros2_control::IgnitionROS2ControlPlugin"> -->
             <plugin filename="libign_ros2_control-system.so" name="ign_ros2_control::IgnitionROS2ControlPlugin">
                 <parameters> $(arg simulation_controllers) </parameters>
-                <controller_manager_node_name> $(arg prefix)controller_manager </controller_manager_node_name>
+                <robot_param> robot_description </robot_param>
+                <robot_param_node> robot_state_publisher </robot_param_node>
+                <controller_manager_name> ctrl_mngr </controller_manager_name>
             </plugin>
         </gazebo>
     </xacro:if>

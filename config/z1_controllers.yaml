@@ -1,12 +1,15 @@
 controller_manager:
   ros__parameters:
-    update_rate: 500 # Hz
+    update_rate: 1000 # Hz
 
     joint_state_broadcaster:
       type: joint_state_broadcaster/JointStateBroadcaster
 
     position_controller:
       type: position_controllers/JointGroupPositionController
+
+    torque_controller:
+      type: effort_controllers/JointGroupEffortController
 
     velocity_controller:
       type: velocity_controllers/JointGroupVelocityController
@@ -26,6 +29,16 @@ controller_manager:
         #     state_publish_rate: 100.0
 
 position_controller:
+  ros__parameters:
+    joints:
+      - shoulder_pan_joint
+      - shoulder_lift_joint
+      - elbow_joint
+      - wrist_1_joint
+      - wrist_2_joint
+      - wrist_3_joint
+
+torque_controller:
   ros__parameters:
     joints:
       - shoulder_pan_joint
