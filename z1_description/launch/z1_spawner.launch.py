@@ -12,9 +12,7 @@ from launch.actions import (
     )
 from launch.substitutions import LaunchConfiguration
 from launch.conditions import IfCondition, UnlessCondition
-from launch.launch_description_sources import (
-        PythonLaunchDescriptionSource
-        )
+from launch.launch_description_sources import (PythonLaunchDescriptionSource)
 from launch_ros.actions import Node
 from launch_ros.substitutions import FindPackageShare
 from ament_index_python.packages import (
@@ -27,34 +25,35 @@ from ament_index_python.packages import (
 
 def launch_setup(context, *args, **kwargs):
 
-    xacro_file = context.launch_configurations["xacro_file"]
-    gripper = context.launch_configurations["gripper"]
-    rviz = context.launch_configurations["rviz"]
-    controllers = context.launch_configurations["controllers"]
-    sim_ignition = context.launch_configurations["sim_ignition"]
-    # use_sim_time = True
+    xacro_file = LaunchConfiguration("xacro_file")
+    robot_name = LaunchConfiguration("robot_name")
+    with_gripper = LaunchConfiguration("with_gripper")
+    rviz = LaunchConfiguration("rviz")
+    available_controllers = LaunchConfiguration("available_controllers")
+    sim_ignition = LaunchConfiguration("sim_ignition")
 
+    sim_ignition_value = sim_ignition.perform(context)
+    use_sim_time = sim_ignition_value == "true"
 
-    print("Retrieved launch configurations")
-    use_ignition = sim_ignition == "true"
-    use_sim_time = use_ignition
-    # control_name = "IgnitionSimSystem" if use_ignition else "z1"
-    control_name = "MySystem" if use_ignition else "z1"
-    # Working: control_name = "IgnitionSystem" if use_ignition else "z1"
+    # Conditions that tells wether the robot is simulated or not
+    # For now it is easy, since only ignition is supported
+    # In any case, the following reference could be useful:
+    # https://answers.ros.org/question/394181/multiple-conditions-for-ifcondition-in-ros2-launch-script/
+    is_simulation = IfCondition(sim_ignition)
+    is_real = UnlessCondition(sim_ignition)
 
-
-    print("PRocessing xacro")
     robot_description_content = xacro.process(
-        xacro_file,
+        xacro_file.perform(context),
         mappings={
-            "name": control_name,
+            "name": robot_name.perform(context),
             "prefix": "",
-            "with_gripper": gripper,
-            "simulation_controllers": controllers,
-            "sim_ignition": sim_ignition,
+            "with_gripper": with_gripper.perform(context),
+            "simulation_controllers": available_controllers.perform(context),
+            "sim_ignition": sim_ignition.perform(context),
             }
         )
     robot_description = {"robot_description": robot_description_content}
+
     with open("file.urdf", "w") as f:
         f.write(robot_description_content)
 
@@ -71,15 +70,15 @@ def launch_setup(context, *args, **kwargs):
         package="controller_manager",
         executable="ros2_control_node",
         parameters=[
-            robot_description,
-            controllers, {
-            "use_sim_time": use_sim_time
-            }],
+            robot_description, available_controllers, {
+                "use_sim_time": use_sim_time
+                }
+            ],
         remappings=[
             ('motion_control_handle/target_frame', 'target_frame'),
             ('cartesian_motion_controller/target_frame', 'target_frame'),
             ],
-        condition=UnlessCondition(sim_ignition),
+        condition=is_real,
         )
 
     joint_state_broadcaster_spawner = Node(
@@ -89,135 +88,59 @@ def launch_setup(context, *args, **kwargs):
         parameters=[{
             "use_sim_time": use_sim_time,
             "set_state": "active",
-            }]
+            }],
+        condition=IfCondition(rviz),
         )
 
-    joint_controller_node = Node(
-        package="controller_manager",
-        executable="spawner",
-        arguments=["position_controller", "-c", "/controller_manager"],
-        parameters=[{
-            "use_sim_time": use_sim_time
-            }]
-        )
-
-    torque_controller_node = Node(
-        package="controller_manager",
-        executable="spawner",
-        arguments=["torque_controller", "-c", "/controller_manager"],
-        parameters=[{
-            "use_sim_time": use_sim_time
-            }]
-        )
-
-    cartesian_motion_controller_spawner = Node(
-        package="controller_manager",
-        executable="spawner",
-        arguments=["cartesian_motion_controller", "-c", "/controller_manager"],
-        parameters=[{"use_sim_time": use_sim_time}]
-    )
-
-    impedance_controller_spawner = Node(
-        package="controller_manager",
-        executable="spawner",
-        arguments=["cartesian_impedance_controller", "-c", "/controller_manager"],
-        parameters=[{"use_sim_time": use_sim_time}]
-    )
-
-    motion_control_handle_spawner = Node(
-        package="controller_manager",
-        executable="spawner",
-        # arguments=["motion_control_handle", "-c"," --stopped " "/controller_manager"],
-        arguments=["motion_control_handle", "-c", "/controller_manager"],
-        parameters=[{"use_sim_time": use_sim_time}]
-    )
-
-    controller_list = [
-        joint_state_broadcaster_spawner,
-        impedance_controller_spawner,
-        # joint_controller_node,
-        torque_controller_node,
-        # cartesian_motion_controller_spawner,
-        motion_control_handle_spawner,
-        ]
-
-    print("Setup RViz")
     rviz_node = Node(
         package="rviz2",
         executable="rviz2",
         output="screen",
         arguments=[
             "-d",
-            os.path.join(
-                get_package_share_path("z1_description"), "rviz", "z1.rviz"
-                )
+            os.path.join(get_package_share_path("z1_description"), "rviz", "z1.rviz")
             ],
         condition=IfCondition(rviz),
         )
 
-    print("Setup ignition spawn entity")
+    delay_rviz = RegisterEventHandler(
+        event_handler=OnProcessExit(
+            target_action=joint_state_broadcaster_spawner,
+            on_exit=[rviz_node],
+            ),
+        )
+
     # Ignition nodes
-    ignition_spawn_entity = Node(
+    ignition_simulator_node = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource([
+            FindPackageShare("ros_gz_sim"), "/launch/gz_sim.launch.py"
+            ], ),
+        launch_arguments={"ign_args": " -r -v 1 empty.sdf"}.items(),
+        condition=IfCondition(sim_ignition),
+        )
+
+    ignition_spawn_z1_node = Node(
         package="ros_gz_sim",
         executable="create",
         output="screen",
         arguments=[
             "-name",
-            "z1",
+            robot_name,
             "-topic",
             "robot_description",
-        ],
-        condition=IfCondition(sim_ignition),
-    )
-
-    print("Igntion bridge")
-    ignition_bridge = Node(
-        package="ros_ign_bridge",
-        executable="parameter_bridge",
-        output="screen",
+            ],
         condition=IfCondition(sim_ignition),
         )
 
-
-
-    # ign_gazebo_path = get_package_share_directory("ros_ign_gazebo")
-    # ign_gazebo_launchfile = ign_gazebo_path + "/launch/ign_gazebo.launch.py"
-    print("Setup ignition node launch")
-    ignition_node = IncludeLaunchDescription(
-            PythonLaunchDescriptionSource(
-                [FindPackageShare("ros_gz_sim"), "/launch/gz_sim.launch.py"],
-            ),
-            launch_arguments={"ign_args": " -r -v 1 empty.sdf"}.items(),
-            condition=IfCondition(sim_ignition),
-            )
-
-    print("Setup state broadcaster delay")
-    delay_rviz = RegisterEventHandler(
-            event_handler=OnProcessExit(
-                target_action=joint_state_broadcaster_spawner,
-                on_exit=[rviz_node],
-                ),
-            )
-
-
-    print("Setup controller delay")
-    controller_delay = TimerAction(
-            period=3.0,
-            actions=[*controller_list],
-            )
-
-
-    print("Returning notes to start")
-    notes_to_start = [
+    nodes_to_start = [
         robot_state_publisher_node,
         controller_manager_node,
-        controller_delay,
+        joint_state_broadcaster_spawner,
         delay_rviz,
-        ignition_spawn_entity,
-        ignition_node,
-        # ignition_bridge,
+        ignition_simulator_node,
+        ignition_spawn_z1_node,
         ]
-    return notes_to_start
+    return nodes_to_start
 
 
 
@@ -240,12 +163,7 @@ def generate_launch_description():
     else:
         os.environ[LIB_ENV_VAR] = "/opt/ros/humble/lib"
 
-    # LD_LIB_PATH = "LD_LIBRARY_PATH"
-    # if LD_LIB_PATH in os.environ:
-    #     os.environ[LD_LIB_PATH] += ":/opt/ros/humble/lib"
-    # else:
-    #     os.environ[LD_LIB_PATH] = "/opt/ros/humble/lib"
-
+    # --- Launch arguments
     declared_arguments.append(
         DeclareLaunchArgument(
             "xacro_file",
@@ -255,20 +173,32 @@ def generate_launch_description():
             description="Path to xacro file of the Z1 manipulator"
             )
         )
+
     declared_arguments.append(
         DeclareLaunchArgument(
-            "controllers",
+            "robot_name", default_value="z1", description="Name of the robot"
+            )
+        )
+
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            "available_controllers",
             default_value=os.path.join(
                 get_package_share_path(package_name), "config", "z1_controllers.yaml"
                 ),
-            description="path to the controllers.yaml file"
+            description=
+            "Path to the controllers.yaml file that can be loaded by the robot"
             )
         )
+
     declared_arguments.append(
         DeclareLaunchArgument(
-            "gripper", default_value="false", description="Using the default gripper"
+            "with_gripper",
+            default_value="false",
+            description="Use the default gripper?"
             )
         )
+
     declared_arguments.append(
         DeclareLaunchArgument(
             "sim_ignition",
@@ -276,6 +206,7 @@ def generate_launch_description():
             description="Launch simulation in Ignition Gazebo?"
             )
         )
+
     declared_arguments.append(
         DeclareLaunchArgument("rviz", default_value="true", description="Launch RViz?")
         )
