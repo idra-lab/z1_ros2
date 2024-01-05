@@ -50,7 +50,7 @@ set(Z1_CTRL_EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/z1_ctrl)
 #
 
 set(UNITREE_Z1_HW_INTERFACE_SRCS
-    src/unitree_z1_hw_interface.cpp
+    src/z1_hw_interface.cpp
     # Add .cpp files here if needed
     )
 add_library(

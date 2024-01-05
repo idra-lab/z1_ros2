@@ -1,4 +1,4 @@
-<library path="unitree_z1_hw_interface">
+<library path="z1_hw_interface">
   <class name="z1_hw_interface/Z1HwInterface"
          type="unitree::z1::Z1HwInterface"
          base_class_type="hardware_interface::SystemInterface">

@@ -1,4 +1,4 @@
-#include "unitree_z1_hw_interface/unitree_z1_hw_interface.hpp"
+#include "z1_hw_interface/z1_hw_interface.hpp"
 
 #include <cstddef>
 #include <cstdlib>
@@ -218,7 +218,7 @@ hardware_interface::CallbackReturn Z1HwInterface::on_init(
     if (n_procs <= 2) {
         RCLCPP_INFO(Z1_HWI_LOGGER, "Starting the controller");
         const std::string controller_path =
-                ament_index_cpp::get_package_prefix("unitree_z1_hw_interface") +
+                ament_index_cpp::get_package_prefix("z1_hw_interface") +
                 "/lib/controller";
         const std::string launch_subcmd = "cd " + controller_path +
                                           " && chmod +x ./z1_ctrl" +
