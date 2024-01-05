@@ -11,111 +11,23 @@ controller_manager:
     torque_controller:
       type: effort_controllers/JointGroupEffortController
 
-    velocity_controller:
-      type: velocity_controllers/JointGroupVelocityController
-
-    cartesian_motion_controller:
-      type: cartesian_motion_controller/CartesianMotionController
-
-    motion_control_handle:
-      type: cartesian_controller_handles/MotionControlHandle
-
-    cartesian_impedance_controller:
-      type: cartesian_impedance_controller/CartesianImpedanceController
-
-
-        # speed_scaling_state_broadcaster:
-        #   ros__parameters:
-        #     state_publish_rate: 100.0
 
 position_controller:
   ros__parameters:
     joints:
-      - shoulder_pan_joint
-      - shoulder_lift_joint
-      - elbow_joint
-      - wrist_1_joint
-      - wrist_2_joint
-      - wrist_3_joint
+      - joint1
+      - joint2
+      - joint3
+      - joint4
+      - joint5
+      - joint6
 
 torque_controller:
   ros__parameters:
     joints:
-      - shoulder_pan_joint
-      - shoulder_lift_joint
-      - elbow_joint
-      - wrist_1_joint
-      - wrist_2_joint
-      - wrist_3_joint
-
-cartesian_motion_controller:
-  ros__parameters:
-
-    # See the cartesian_compliance_controller
-    end_effector_link: "end_effector"
-    robot_base_link: "link00"
-    joints:
-      - shoulder_pan_joint
-      - shoulder_lift_joint
-      - elbow_joint
-      - wrist_1_joint
-      - wrist_2_joint
-      - wrist_3_joint
-
-    # See the cartesian_compliance_controller
-    command_interfaces:
-      - position
-      # - velocity
-
-    solver:
-        error_scale: 1.0
-        iterations: 10
-
-    pd_gains:
-        trans_x: {p: 5.0}
-        trans_y: {p: 5.0}
-        trans_z: {p: 5.0}
-        rot_x: {p: 2.5}
-        rot_y: {p: 2.5}
-        rot_z: {p: 2.5}
-
-motion_control_handle:
-  ros__parameters:
-    end_effector_link: "end_effector"
-    robot_base_link: "link00"
-    ft_sensor_ref_link: "end_effector"
-    joints:
-      - shoulder_pan_joint
-      - shoulder_lift_joint
-      - elbow_joint
-      - wrist_1_joint
-      - wrist_2_joint
-      - wrist_3_joint
-
-cartesian_impedance_controller:
-  ros__parameters:
-    robot_base_link: "link00"
-    ft_sensor_ref_link: "end_effector"
-    compliance_ref_link: "end_effector"
-    end_effector_link: "end_effector"
-
-    command_interfaces:
-      - effort
-    state_interfaces:
-      - position
-      - velocity
-    joints:
-      - shoulder_pan_joint
-      - shoulder_lift_joint
-      - elbow_joint
-      - wrist_1_joint
-      - wrist_2_joint
-      - wrist_3_joint
-    delta_tau_max: 1.0 # Nm
-    stiffness:  # w.r.t. compliance_ref_link coordinates
-        trans_x: 500.0
-        trans_y: 500.0
-        trans_z: 500.0
-        rot_x: 40.0
-        rot_y: 40.0
-        rot_z: 40.0
+      - joint1
+      - joint2
+      - joint3
+      - joint4
+      - joint5
+      - joint6

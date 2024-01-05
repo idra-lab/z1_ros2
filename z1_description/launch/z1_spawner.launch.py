@@ -4,22 +4,19 @@ import os
 from launch import LaunchDescription
 from launch.actions import (
     DeclareLaunchArgument,
-    ExecuteProcess,
     IncludeLaunchDescription,
     OpaqueFunction,
     RegisterEventHandler,
-    TimerAction,
-    )
+)
 from launch.substitutions import LaunchConfiguration
 from launch.conditions import IfCondition, UnlessCondition
-from launch.launch_description_sources import (PythonLaunchDescriptionSource)
+from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch_ros.actions import Node
 from launch_ros.substitutions import FindPackageShare
 from ament_index_python.packages import (
-    get_package_share_directory,
     get_package_prefix,
     get_package_share_path,
-    )
+)
 
 
 
@@ -50,8 +47,8 @@ def launch_setup(context, *args, **kwargs):
             "with_gripper": with_gripper.perform(context),
             "simulation_controllers": available_controllers.perform(context),
             "sim_ignition": sim_ignition.perform(context),
-            }
-        )
+        }
+    )
     robot_description = {"robot_description": robot_description_content}
 
     with open("file.urdf", "w") as f:
@@ -63,8 +60,8 @@ def launch_setup(context, *args, **kwargs):
         output="both",
         parameters=[robot_description, {
             "use_sim_time": use_sim_time,
-            }],
-        )
+        }],
+    )
 
     controller_manager_node = Node(
         package="controller_manager",
@@ -72,14 +69,14 @@ def launch_setup(context, *args, **kwargs):
         parameters=[
             robot_description, available_controllers, {
                 "use_sim_time": use_sim_time
-                }
-            ],
+            }
+        ],
         remappings=[
             ('motion_control_handle/target_frame', 'target_frame'),
             ('cartesian_motion_controller/target_frame', 'target_frame'),
-            ],
+        ],
         condition=is_real,
-        )
+    )
 
     joint_state_broadcaster_spawner = Node(
         package="controller_manager",
@@ -88,9 +85,9 @@ def launch_setup(context, *args, **kwargs):
         parameters=[{
             "use_sim_time": use_sim_time,
             "set_state": "active",
-            }],
+        }],
         condition=IfCondition(rviz),
-        )
+    )
 
     rviz_node = Node(
         package="rviz2",
@@ -99,25 +96,25 @@ def launch_setup(context, *args, **kwargs):
         arguments=[
             "-d",
             os.path.join(get_package_share_path("z1_description"), "rviz", "z1.rviz")
-            ],
+        ],
         condition=IfCondition(rviz),
-        )
+    )
 
     delay_rviz = RegisterEventHandler(
         event_handler=OnProcessExit(
             target_action=joint_state_broadcaster_spawner,
             on_exit=[rviz_node],
-            ),
-        )
+        ),
+    )
 
     # Ignition nodes
     ignition_simulator_node = IncludeLaunchDescription(
         PythonLaunchDescriptionSource([
             FindPackageShare("ros_gz_sim"), "/launch/gz_sim.launch.py"
-            ], ),
+        ], ),
         launch_arguments={"ign_args": " -r -v 1 empty.sdf"}.items(),
         condition=IfCondition(sim_ignition),
-        )
+    )
 
     ignition_spawn_z1_node = Node(
         package="ros_gz_sim",
@@ -128,9 +125,9 @@ def launch_setup(context, *args, **kwargs):
             robot_name,
             "-topic",
             "robot_description",
-            ],
+        ],
         condition=IfCondition(sim_ignition),
-        )
+    )
 
     nodes_to_start = [
         robot_state_publisher_node,
@@ -139,7 +136,7 @@ def launch_setup(context, *args, **kwargs):
         delay_rviz,
         ignition_simulator_node,
         ignition_spawn_z1_node,
-        ]
+    ]
     return nodes_to_start
 
 
@@ -169,48 +166,58 @@ def generate_launch_description():
             "xacro_file",
             default_value=os.path.join(
                 get_package_share_path(package_name), "urdf", "z1.urdf.xacro"
-                ),
+            ),
             description="Path to xacro file of the Z1 manipulator"
-            )
         )
+    )
 
     declared_arguments.append(
         DeclareLaunchArgument(
             "robot_name", default_value="z1", description="Name of the robot"
-            )
         )
+    )
 
     declared_arguments.append(
         DeclareLaunchArgument(
             "available_controllers",
             default_value=os.path.join(
                 get_package_share_path(package_name), "config", "z1_controllers.yaml"
-                ),
+            ),
             description=
             "Path to the controllers.yaml file that can be loaded by the robot"
-            )
         )
+    )
 
     declared_arguments.append(
         DeclareLaunchArgument(
             "with_gripper",
-            default_value="false",
+            default_value="true",
             description="Use the default gripper?"
-            )
         )
+    )
 
     declared_arguments.append(
         DeclareLaunchArgument(
             "sim_ignition",
             default_value="true",
             description="Launch simulation in Ignition Gazebo?"
-            )
         )
+    )
 
     declared_arguments.append(
         DeclareLaunchArgument("rviz", default_value="true", description="Launch RViz?")
+    )
+
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            "rviz_config",
+            default_value=os.path.join(
+                get_package_share_path(package_name), "rviz", "z1.rviz"
+            ),
+            description="Path to RViz configuration file"
         )
+    )
 
     return LaunchDescription(
         declared_arguments + [OpaqueFunction(function=launch_setup)]
-        )
+    )

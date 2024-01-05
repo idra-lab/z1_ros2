@@ -7,160 +7,157 @@
 
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
 
-  <xacro:macro name="z1_ros2_control" params="
-    name
-    sim_ignition:=true
-    prefix
-    with_gripper:=true
-    ">
+    <xacro:macro name="z1_ros2_control" params="
+        name:='z1'
+        sim_ignition:=true
+        prefix:=''
+        with_gripper:=true
+        ">
 
-  <!-- <ros2_control name="${name}" type="system"> -->
+        <ros2_control name="${name}" type="system">
 
-    <ros2_control name="${name}" type="system">
+            <hardware>
+                <xacro:if value="${sim_ignition}">
+                    <plugin>ign_ros2_control/IgnitionSystem</plugin>
+                </xacro:if>
+                <xacro:unless value="${sim_ignition}">
+                    <plugin>z1_hw_interface/Z1HwInterface</plugin>
+                    <param name="gripper">${with_gripper}</param>
+                    <!-- add other necessary parameters here -->
+                </xacro:unless>
+            </hardware>
 
-      <hardware>
-        <xacro:if value="${sim_ignition}">
-        <plugin>ign_ros2_control/IgnitionSystem</plugin>
-            <!-- <plugin>gz_ros2_control/GazeboSimSystem</plugin>-->
-        </xacro:if>
-        <xacro:unless value="${sim_ignition}">
-          <plugin>z1_hw_interface/Z1HwInterface</plugin>
-          <param name="gripper">${with_gripper}</param>
-          <!-- add other necessary parameters here -->
-        </xacro:unless>
-      </hardware>
+            <joint name="joint1">
+                <command_interface name="position">
+                    <param name="min"> ${joint1_PositionMin} </param>
+                    <param name="max"> ${joint1_PositionMax} </param>
+                </command_interface>
+                <command_interface name="velocity">
+                    <param name="min"> -${velocityMax} </param>
+                    <param name="max"> ${velocityMax} </param>
+                </command_interface>
+                <command_interface name="effort">
+                    <param name="min"> -${torqueMax} </param>
+                    <param name="max"> ${torqueMax} </param>
+                </command_interface>
+                <state_interface name="position"/>
+                <state_interface name="velocity"/>
+                <state_interface name="effort"/>
+            </joint>
 
-      <joint name="$(arg prefix)shoulder_pan_joint">
-        <command_interface name="position">
-          <param name="min"> ${joint1_PositionMin} </param>
-          <param name="max"> ${joint1_PositionMax} </param>
-        </command_interface>
-        <command_interface name="velocity">
-          <param name="min"> -${velocityMax} </param>
-          <param name="max"> ${velocityMax} </param>
-        </command_interface>
-        <command_interface name="effort">
-          <param name="min"> -${torqueMax} </param>
-          <param name="max"> ${torqueMax} </param>
-        </command_interface>
-        <state_interface name="position"/>
-        <state_interface name="velocity"/>
-        <state_interface name="effort"/>
-      </joint>
+            <joint name="joint2">
+                <command_interface name="position">
+                    <param name="min"> ${joint2_PositionMin} </param>
+                    <param name="max"> ${joint2_PositionMax} </param>
+                </command_interface>
+                <command_interface name="velocity">
+                    <param name="min"> -${velocityMax} </param>
+                    <param name="max"> ${velocityMax} </param>
+                </command_interface>
+                <command_interface name="effort">
+                    <param name="min"> -${torqueMax} </param>
+                    <param name="max"> ${torqueMax} </param>
+                </command_interface>
+                <state_interface name="position"/>
+                <state_interface name="velocity"/>
+                <state_interface name="effort"/>
+            </joint>
 
-      <joint name="$(arg prefix)shoulder_lift_joint">
-        <command_interface name="position">
-          <param name="min"> ${joint2_PositionMin} </param>
-          <param name="max"> ${joint2_PositionMax} </param>
-        </command_interface>
-        <command_interface name="velocity">
-          <param name="min"> -${velocityMax} </param>
-          <param name="max"> ${velocityMax} </param>
-        </command_interface>
-        <command_interface name="effort">
-          <param name="min"> -${2*torqueMax} </param>
-          <param name="max"> ${2*torqueMax} </param>
-        </command_interface>
-        <state_interface name="position"/>
-        <state_interface name="velocity"/>
-        <state_interface name="effort"/>
-      </joint>
+            <joint name="joint3">
+                <command_interface name="position">
+                    <param name="min"> ${joint3_PositionMin} </param>
+                    <param name="max"> ${joint3_PositionMax} </param>
+                </command_interface>
+                <command_interface name="velocity">
+                    <param name="min"> -${velocityMax} </param>
+                    <param name="max"> ${velocityMax} </param>
+                </command_interface>
+                <command_interface name="effort">
+                    <param name="min"> -${torqueMax} </param>
+                    <param name="max"> ${torqueMax} </param>
+                </command_interface>
+                <state_interface name="position"/>
+                <state_interface name="velocity"/>
+                <state_interface name="effort"/>
+            </joint>
 
-      <joint name="$(arg prefix)elbow_joint">
-        <command_interface name="position">
-          <param name="min"> ${joint3_PositionMin} </param>
-          <param name="max"> ${joint3_PositionMax} </param>
-        </command_interface>
-        <command_interface name="velocity">
-          <param name="min"> -${velocityMax} </param>
-          <param name="max"> ${velocityMax} </param>
-        </command_interface>
-        <command_interface name="effort">
-          <param name="min"> -${torqueMax} </param>
-          <param name="max"> ${torqueMax} </param>
-        </command_interface>
-        <state_interface name="position"/>
-        <state_interface name="velocity"/>
-        <state_interface name="effort"/>
-      </joint>
+            <joint name="joint4">
+                <command_interface name="position">
+                    <param name="min"> ${joint4_PositionMin} </param>
+                    <param name="max"> ${joint4_PositionMax} </param>
+                </command_interface>
+                <command_interface name="velocity">
+                    <param name="min"> -${velocityMax} </param>
+                    <param name="max"> ${velocityMax} </param>
+                </command_interface>
+                <command_interface name="effort">
+                    <param name="min"> -${torqueMax} </param>
+                    <param name="max"> ${torqueMax} </param>
+                </command_interface>
+                <state_interface name="position"/>
+                <state_interface name="velocity"/>
+                <state_interface name="effort"/>
+            </joint>
 
-      <joint name="$(arg prefix)wrist_1_joint">
-        <command_interface name="position">
-          <param name="min"> ${joint4_PositionMin} </param>
-          <param name="max"> ${joint4_PositionMax} </param>
-        </command_interface>
-        <command_interface name="velocity">
-          <param name="min"> -${velocityMax} </param>
-          <param name="max"> ${velocityMax} </param>
-        </command_interface>
-        <command_interface name="effort">
-          <param name="min"> -${torqueMax} </param>
-          <param name="max"> ${torqueMax} </param>
-        </command_interface>
-        <state_interface name="position"/>
-        <state_interface name="velocity"/>
-        <state_interface name="effort"/>
-      </joint>
+            <joint name="joint5">
+                <command_interface name="position">
+                    <param name="min"> ${joint5_PositionMin} </param>
+                    <param name="max"> ${joint5_PositionMax} </param>
+                </command_interface>
+                <command_interface name="velocity">
+                    <param name="min"> -${velocityMax} </param>
+                    <param name="max"> ${velocityMax} </param>
+                </command_interface>
+                <command_interface name="effort">
+                    <param name="min"> -${torqueMax} </param>
+                    <param name="max"> ${torqueMax} </param>
+                </command_interface>
+                <state_interface name="position"/>
+                <state_interface name="velocity"/>
+                <state_interface name="effort"/>
+            </joint>
 
-      <joint name="$(arg prefix)wrist_2_joint">
-        <command_interface name="position">
-          <param name="min"> ${joint5_PositionMin} </param>
-          <param name="max"> ${joint5_PositionMax} </param>
-        </command_interface>
-        <command_interface name="velocity">
-          <param name="min"> -${velocityMax} </param>
-          <param name="max"> ${velocityMax} </param>
-        </command_interface>
-        <command_interface name="effort">
-          <param name="min"> -${torqueMax} </param>
-          <param name="max"> ${torqueMax} </param>
-        </command_interface>
-        <state_interface name="position"/>
-        <state_interface name="velocity"/>
-        <state_interface name="effort"/>
-      </joint>
-
-      <joint name="$(arg prefix)wrist_3_joint">
-        <command_interface name="position">
-          <param name="min"> ${joint6_PositionMin} </param>
-          <param name="max"> ${joint6_PositionMax} </param>
-        </command_interface>
-        <command_interface name="velocity">
-          <param name="min"> -${velocityMax} </param>
-          <param name="max"> ${velocityMax} </param>
-        </command_interface>
-        <command_interface name="effort">
-          <param name="min"> -${torqueMax} </param>
-          <param name="max"> ${torqueMax} </param>
-        </command_interface>
-        <state_interface name="position"/>
-        <state_interface name="velocity"/>
-        <state_interface name="effort"/>
-      </joint>
-
-      <xacro:if value="${with_gripper}">
-          <joint name="$(arg prefix)gripper">
-            <command_interface name="position">
-              <param name="min"> ${Gripper_PositionMin} </param>
-              <param name="max"> ${Gripper_PositionMax} </param>
-            </command_interface>
-            <command_interface name="velocity">
-              <param name="min"> -${velocityMax} </param>
-              <param name="max"> ${velocityMax} </param>
-            </command_interface>
-            <command_interface name="effort">
-              <param name="min"> -${torqueMax} </param>
-              <param name="max"> ${torqueMax} </param>
-            </command_interface>
-            <state_interface name="position"/>
-            <state_interface name="velocity"/>
-            <state_interface name="effort"/>
-          </joint>
-    </xacro:if>
+            <joint name="joint6">
+                <command_interface name="position">
+                    <param name="min"> ${joint6_PositionMin} </param>
+                    <param name="max"> ${joint6_PositionMax} </param>
+                </command_interface>
+                <command_interface name="velocity">
+                    <param name="min"> -${velocityMax} </param>
+                    <param name="max"> ${velocityMax} </param>
+                </command_interface>
+                <command_interface name="effort">
+                    <param name="min"> -${torqueMax} </param>
+                    <param name="max"> ${torqueMax} </param>
+                </command_interface>
+                <state_interface name="position"/>
+                <state_interface name="velocity"/>
+                <state_interface name="effort"/>
+            </joint>
 
 
-    </ros2_control>
+            <xacro:if value="${with_gripper}">
+                <joint name="jointGripper">
+                    <command_interface name="position">
+                        <param name="min"> ${Gripper_PositionMin} </param>
+                        <param name="max"> ${Gripper_PositionMax} </param>
+                    </command_interface>
+                    <command_interface name="velocity">
+                        <param name="min"> -${velocityMax} </param>
+                        <param name="max"> ${velocityMax} </param>
+                    </command_interface>
+                    <command_interface name="effort">
+                        <param name="min"> -${torqueMax} </param>
+                        <param name="max"> ${torqueMax} </param>
+                    </command_interface>
+                    <state_interface name="position"/>
+                    <state_interface name="velocity"/>
+                    <state_interface name="effort"/>
+                </joint>
+            </xacro:if>
 
-  </xacro:macro>
+        </ros2_control>
+
+    </xacro:macro>
 
 </robot>

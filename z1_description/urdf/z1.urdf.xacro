@@ -9,14 +9,9 @@
     <xacro:arg name="with_gripper" default="true"/>
 
     <xacro:include filename="$(find z1_description)/urdf/const.xacro"/>
-    <!-- <xacro:include filename="$(find z1_description)/urdf/gazebo.xacro"/> -->
-    <!-- <xacro:include filename="$(find z1_description)/urdf/transmission.xacro"/> -->
+    <xacro:include filename="$(find z1_description)/urdf/gazebo.xacro"/>
     <xacro:include filename="$(find z1_description)/urdf/z1.ros2_control.xacro"/>
-    <xacro:z1_ros2_control
-    name="$(arg name)"
-    prefix="$(arg prefix)"
-    sim_ignition="$(arg sim_ignition)"
-    with_gripper="$(arg with_gripper)"/>
+    <xacro:include filename="$(find z1_description)/urdf/transmission.xacro"/>
 
 
     <link name="world"/>
@@ -50,7 +45,7 @@
         </inertial>
     </link>
 
-    <joint name="$(arg prefix)shoulder_pan_joint" type="revolute">
+    <joint name="joint1" type="revolute">
         <origin rpy="0 0 0" xyz="0 0 0.0585"/>
         <parent link="link00"/>
         <child link="link01"/>
@@ -76,7 +71,7 @@
         </inertial>
     </link>
 
-    <joint name="$(arg prefix)shoulder_lift_joint" type="revolute">
+    <joint name="joint2" type="revolute">
         <origin rpy="0 0 0" xyz="0 0 0.045"/>
         <parent link="link01"/>
         <child link="link02"/>
@@ -120,7 +115,7 @@
         </inertial>
     </link>
 
-    <joint name="$(arg prefix)elbow_joint" type="revolute">
+    <joint name="joint3" type="revolute">
         <origin rpy="0 0 0" xyz="-0.35 0 0"/>
         <parent link="link02"/>
         <child link="link03"/>
@@ -158,7 +153,7 @@
         </inertial>
     </link>
 
-    <joint name="$(arg prefix)wrist_1_joint" type="revolute">
+    <joint name="joint4" type="revolute">
         <origin rpy="0 0 0" xyz="0.218 0 0.057"/>
         <parent link="link03"/>
         <child link="link04"/>
@@ -190,7 +185,7 @@
         </inertial>
     </link>
 
-    <joint name="$(arg prefix)wrist_2_joint" type="revolute">
+    <joint name="joint5" type="revolute">
         <origin rpy="0 0 0" xyz="0.07 0.0 0.0"/>
         <parent link="link04"/>
         <child link="link05"/>
@@ -216,7 +211,7 @@
         </inertial>
     </link>
 
-    <joint name="$(arg prefix)wrist_3_joint" type="revolute">
+    <joint name="joint6" type="revolute">
         <origin rpy="0 0 0" xyz="0.0492 0.0 0.0"/>
         <parent link="link05"/>
         <child link="link06"/>
@@ -248,17 +243,8 @@
         </inertial>
     </link>
 
-    <link name="end_effector"/>
-
-    <joint name="end_effect_link" type="fixed">
-        <origin rpy="0 0 0" xyz="0.051 0.0 0.0"/>
-        <parent link="link06"/>
-        <child link="end_effector"/>
-    </joint>
-
-
     <xacro:if value="$(arg with_gripper)">
-        <joint name="gripperStator" type="fixed">
+        <joint name="gripperStatorLink" type="fixed">
             <origin rpy="0 0 0" xyz="0.051 0.0 0.0"/>
             <parent link="link06"/>
             <child link="gripperStator"/>
@@ -285,7 +271,7 @@
             </inertial>
         </link>
 
-        <joint name="gripper" type="revolute">
+        <joint name="jointGripper" type="revolute">
             <origin rpy="0 0 0" xyz="0.049 0.0 0"/>
             <parent link="gripperStator"/>
             <child link="gripperMover"/>
@@ -315,8 +301,6 @@
             </inertial>
         </link>
 
-        <!--<xacro:motorTransmission name="Gripper"/>-->
-
         <gazebo reference="gripperStator">
             <self_collide>true</self_collide>
         </gazebo>
@@ -326,21 +310,9 @@
         </gazebo>
     </xacro:if>
 
-    <!--
-    <xacro:motorTransmission name="1"/>
-    <xacro:motorTransmission name="2"/>
-    <xacro:motorTransmission name="3"/>
-    <xacro:motorTransmission name="4"/>
-    <xacro:motorTransmission name="5"/>
-    <xacro:motorTransmission name="6"/>
-    -->
     <xacro:if value="$(arg sim_ignition)">
-        Gazebo plugins
-        <gazebo reference="world">
-        </gazebo>
+        <gazebo reference="world"/>
         <gazebo>
-        <!-- <plugin filename = "libign_ros2_control-system.so" name="ign_ros2_control::IgnitionROS2ControlPlugin">-->
-        <!-- <plugin filename="ign_ros2_control-system" name="ign_ros2_control::IgnitionROS2ControlPlugin"> -->
             <plugin filename="libign_ros2_control-system.so" name="ign_ros2_control::IgnitionROS2ControlPlugin">
                 <parameters> $(arg simulation_controllers) </parameters>
                 <robot_param> robot_description </robot_param>
@@ -349,5 +321,11 @@
             </plugin>
         </gazebo>
     </xacro:if>
+
+    <xacro:z1_ros2_control
+        name="$(arg name)"
+        prefix="$(arg prefix)"
+        sim_ignition="$(arg sim_ignition)"
+        with_gripper="$(arg with_gripper)"/>
 
 </robot>
