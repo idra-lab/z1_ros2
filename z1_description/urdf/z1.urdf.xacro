@@ -9,7 +9,7 @@
     <xacro:arg name="with_gripper" default="true"/>
 
     <xacro:include filename="$(find z1_description)/urdf/const.xacro"/>
-    <xacro:include filename="$(find z1_description)/urdf/gazebo.xacro"/>
+    <!-- <xacro:include filename="$(find z1_description)/urdf/gazebo.xacro"/> -->
     <xacro:include filename="$(find z1_description)/urdf/z1.ros2_control.xacro"/>
     <xacro:include filename="$(find z1_description)/urdf/transmission.xacro"/>
 
