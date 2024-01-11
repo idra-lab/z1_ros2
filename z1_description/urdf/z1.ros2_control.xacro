@@ -17,14 +17,16 @@
         <ros2_control name="${name}" type="system">
 
             <hardware>
-                <xacro:if value="${sim_ignition}">
+                <xacro:if value="${coppelia}">
+          		    <plugin>z1_coppelia_hw/Z1EffortFakeHardware</plugin>
+                </xacro:if>
+                <!-- <xacro:if value="${sim_ignition}">
                     <plugin>ign_ros2_control/IgnitionSystem</plugin>
                 </xacro:if>
                 <xacro:unless value="${sim_ignition}">
                     <plugin>z1_hw_interface/Z1HwInterface</plugin>
                     <param name="gripper">${with_gripper}</param>
-                    <!-- add other necessary parameters here -->
-                </xacro:unless>
+                </xacro:unless> -->
             </hardware>
 
             <joint name="joint1">
