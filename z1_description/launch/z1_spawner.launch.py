@@ -26,7 +26,7 @@ def launch_setup(context, *args, **kwargs):
     robot_name = LaunchConfiguration("robot_name")
     with_gripper = LaunchConfiguration("with_gripper")
     rviz = LaunchConfiguration("rviz")
-    available_controllers = LaunchConfiguration("available_controllers")
+    controller_config = LaunchConfiguration("controller_config")
     sim_ignition = LaunchConfiguration("sim_ignition")
 
     sim_ignition_value = sim_ignition.perform(context)
@@ -45,7 +45,7 @@ def launch_setup(context, *args, **kwargs):
             "name": robot_name.perform(context),
             "prefix": "",
             "with_gripper": with_gripper.perform(context),
-            "simulation_controllers": available_controllers.perform(context),
+            "controllers": controller_config.perform(context),
             "sim_ignition": sim_ignition.perform(context),
         }
     )
@@ -67,7 +67,7 @@ def launch_setup(context, *args, **kwargs):
         package="controller_manager",
         executable="ros2_control_node",
         parameters=[
-            robot_description, available_controllers, {
+            robot_description, controller_config, {
                 "use_sim_time": use_sim_time
             }
         ],
@@ -124,17 +124,19 @@ def launch_setup(context, *args, **kwargs):
             "-name",
             robot_name,
             "-topic",
-            "robot_description",
+            "/robot_description",
         ],
         condition=IfCondition(sim_ignition),
     )
 
+
+
     nodes_to_start = [
         robot_state_publisher_node,
         controller_manager_node,
+        ignition_simulator_node,
         joint_state_broadcaster_spawner,
         delay_rviz,
-        ignition_simulator_node,
         ignition_spawn_z1_node,
     ]
     return nodes_to_start
@@ -179,7 +181,7 @@ def generate_launch_description():
 
     declared_arguments.append(
         DeclareLaunchArgument(
-            "available_controllers",
+            "controller_config",
             default_value=os.path.join(
                 get_package_share_path(package_name), "config", "z1_controllers.yaml"
             ),
