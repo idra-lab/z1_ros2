@@ -10,6 +10,7 @@
     <xacro:macro name="z1_ros2_control" params="
         name:='z1'
         sim_ignition:=true
+        sim_coppelia:=false
         prefix:=''
         with_gripper:=true
         ">
@@ -17,7 +18,7 @@
         <ros2_control name="${name}" type="system">
 
             <hardware>
-                <xacro:if value="${coppelia}">
+                <xacro:if value="${sim_coppelia}">
           		    <plugin>z1_coppelia_hw/Z1EffortFakeHardware</plugin>
                 </xacro:if>
                 <!-- <xacro:if value="${sim_ignition}">
