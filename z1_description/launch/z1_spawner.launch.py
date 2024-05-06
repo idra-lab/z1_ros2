@@ -27,6 +27,7 @@ def launch_setup(context, *args, **kwargs):
     with_gripper = LaunchConfiguration("with_gripper")
     rviz = LaunchConfiguration("rviz")
     controller_config = LaunchConfiguration("controller_config")
+    starting_controller = LaunchConfiguration("starting_controller")
     sim_ignition = LaunchConfiguration("sim_ignition")
 
     sim_ignition_value = sim_ignition.perform(context)
@@ -86,7 +87,16 @@ def launch_setup(context, *args, **kwargs):
             "use_sim_time": use_sim_time,
             "set_state": "active",
         }],
-        condition=IfCondition(rviz),
+    )
+
+    starting_controller_spawner = Node(
+        package="controller_manager",
+        executable="spawner",
+        arguments=[starting_controller.perform(context), "-c", "/controller_manager"],
+        parameters=[{
+            "use_sim_time": use_sim_time,
+            "set_state": "active",
+        }],
     )
 
     rviz_node = Node(
@@ -129,13 +139,12 @@ def launch_setup(context, *args, **kwargs):
         condition=IfCondition(sim_ignition),
     )
 
-
-
     nodes_to_start = [
         robot_state_publisher_node,
         controller_manager_node,
         ignition_simulator_node,
         joint_state_broadcaster_spawner,
+        starting_controller_spawner,
         delay_rviz,
         ignition_spawn_z1_node,
     ]
@@ -195,6 +204,14 @@ def generate_launch_description():
             "with_gripper",
             default_value="true",
             description="Use the default gripper?"
+        )
+    )
+
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            "starting_controller",
+            default_value="torque_controller",
+            description="Name of the controller to be started"
         )
     )
 
