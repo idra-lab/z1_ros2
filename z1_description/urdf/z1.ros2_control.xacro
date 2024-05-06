@@ -12,6 +12,7 @@ https://github.com/UniversalRobots/Universal_Robots_ROS2_Description/blob/rollin
         params="
         name:='z1'
         sim_ignition:=true
+        sim_coppelia:=false
         prefix:=''
         with_gripper:=true
         ">
