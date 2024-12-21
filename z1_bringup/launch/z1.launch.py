@@ -30,8 +30,7 @@ def launch_setup(context, *args, **kwargs):
     starting_controller = LaunchConfiguration("starting_controller")
     sim_ignition = LaunchConfiguration("sim_ignition")
 
-    sim_ignition_value = sim_ignition.perform(context)
-    use_sim_time = sim_ignition_value == "true"
+    use_sim_time = (sim_ignition.perform(context) == "true")
 
     # Conditions that tells wether the robot is simulated or not
     # For now it is easy, since only ignition is supported
@@ -51,9 +50,6 @@ def launch_setup(context, *args, **kwargs):
         }
     )
     robot_description = {"robot_description": robot_description_content}
-
-    with open("file.urdf", "w") as f:
-        f.write(robot_description_content)
 
     robot_state_publisher_node = Node(
         package="robot_state_publisher",
@@ -110,19 +106,14 @@ def launch_setup(context, *args, **kwargs):
         condition=IfCondition(rviz),
     )
 
-    delay_rviz = RegisterEventHandler(
-        event_handler=OnProcessExit(
-            target_action=joint_state_broadcaster_spawner,
-            on_exit=[rviz_node],
-        ),
-    )
-
     # Ignition nodes
     ignition_simulator_node = IncludeLaunchDescription(
         PythonLaunchDescriptionSource([
             FindPackageShare("ros_gz_sim"), "/launch/gz_sim.launch.py"
         ], ),
-        launch_arguments={"ign_args": " -r -v 1 empty.sdf"}.items(),
+        launch_arguments={
+            "gz_args": " -r -v 1 empty.sdf",
+        }.items(),
         condition=IfCondition(sim_ignition),
     )
 
@@ -139,13 +130,20 @@ def launch_setup(context, *args, **kwargs):
         condition=IfCondition(sim_ignition),
     )
 
+    delay_rviz = RegisterEventHandler(
+        event_handler=OnProcessExit(
+            target_action=joint_state_broadcaster_spawner,
+            on_exit=[rviz_node],
+        )
+    )
+
     nodes_to_start = [
         robot_state_publisher_node,
         controller_manager_node,
-        ignition_simulator_node,
         joint_state_broadcaster_spawner,
         starting_controller_spawner,
         delay_rviz,
+        ignition_simulator_node,
         ignition_spawn_z1_node,
     ]
     return nodes_to_start
@@ -153,17 +151,28 @@ def launch_setup(context, *args, **kwargs):
 
 
 def generate_launch_description():
-    package_name = "z1_description"
     declared_arguments = []
 
-    pkg_prefix_dir = get_package_prefix(package_name)
+    rviz_config_default = os.path.join(
+        get_package_prefix("z1_bringup"), "rviz", "z1.rviz"
+    )
+    xacro_file_default = os.path.join(
+        get_package_share_path("z1_description"), "urdf", "z1.urdf.xacro"
+    )
+    controller_config_default = os.path.join(
+        get_package_share_path("z1_bringup"), "config", "z1_controllers.yaml"
+    )
 
     # --- Setup environment variables
     MDL_ENV_VAR = "IGN_GAZEBO_RESOURCE_PATH"
     if MDL_ENV_VAR in os.environ:
-        os.environ[MDL_ENV_VAR] += ":" + os.path.join(pkg_prefix_dir, "share")
+        os.environ[MDL_ENV_VAR] += ":" + os.path.join(
+            get_package_prefix("z1_description"), "share"
+        )
     else:
-        os.environ[MDL_ENV_VAR] = os.path.join(pkg_prefix_dir, "share")
+        os.environ[MDL_ENV_VAR] = os.path.join(
+            get_package_prefix("z1_description"), "share"
+        )
 
     LIB_ENV_VAR = "IGN_GAZEBO_SYSTEM_PLUGIN_PATH"
     if LIB_ENV_VAR in os.environ:
@@ -175,9 +184,7 @@ def generate_launch_description():
     declared_arguments.append(
         DeclareLaunchArgument(
             "xacro_file",
-            default_value=os.path.join(
-                get_package_share_path(package_name), "urdf", "z1.urdf.xacro"
-            ),
+            default_value=xacro_file_default,
             description="Path to xacro file of the Z1 manipulator"
         )
     )
@@ -191,9 +198,7 @@ def generate_launch_description():
     declared_arguments.append(
         DeclareLaunchArgument(
             "controller_config",
-            default_value=os.path.join(
-                get_package_share_path(package_name), "config", "z1_controllers.yaml"
-            ),
+            default_value=controller_config_default,
             description=
             "Path to the controllers.yaml file that can be loaded by the robot"
         )
@@ -201,9 +206,7 @@ def generate_launch_description():
 
     declared_arguments.append(
         DeclareLaunchArgument(
-            "with_gripper",
-            default_value="true",
-            description="Use the default gripper?"
+            "with_gripper", default_value="true", description="Use the gripper?"
         )
     )
 
@@ -230,9 +233,7 @@ def generate_launch_description():
     declared_arguments.append(
         DeclareLaunchArgument(
             "rviz_config",
-            default_value=os.path.join(
-                get_package_share_path(package_name), "rviz", "z1.rviz"
-            ),
+            default_value=rviz_config_default,
             description="Path to RViz configuration file"
         )
     )

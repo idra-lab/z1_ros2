@@ -4,7 +4,7 @@
 
     <xacro:arg name="name" default="z1" />
     <xacro:arg name="prefix" default="" />
-    <xacro:arg name="controllers" default="$(find z1_description)/config/z1_controllers.yaml" />
+    <xacro:arg name="controllers" default="$(find z1_bringup)/config/z1_controllers.yaml" />
     <xacro:arg name="sim_ignition" default="true" />
     <xacro:arg name="with_gripper" default="true" />
 
