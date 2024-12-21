@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.8)
-project(z1_hw_interface)
+project(z1_hardware_interface)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
@@ -93,7 +93,7 @@ target_compile_options(
 # |___|_| |_|___/\__\__,_|_|_|
 #
 
-pluginlib_export_plugin_description_file(hardware_interface unitree_z1_hw_interface.xml)
+pluginlib_export_plugin_description_file(hardware_interface z1_hardware_interface.xml)
 
 install(
     TARGETS ${PROJECT_NAME}

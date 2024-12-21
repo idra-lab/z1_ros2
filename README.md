@@ -33,8 +33,7 @@ This repository contains different sub-packages:
 
 - `z1_description`: contains the URDFs for the Z1 robot, as well as its meshes;
 - `z1_bringup`: contains configuration and launch files for the Z1 manipulator;
-- `z1_hw_interface`: provides the [ROS2 control](https://control.ros.org/rolling/index.html) hardware interface for the Z1 manipulator.
-
+- `z1_hardware_interface`🚧⚠️ **work in progress**⚠️🚧: provides the [ROS2 control](https://control.ros.org/rolling/index.html) hardware interface for the Z1 manipulator.
 
 ## Testing the robot
 
