@@ -14,13 +14,7 @@ mkdir -p ~/ros2_ws/src && cd ~/ros2_ws/src
 git clone https://github.com/idra-lab/z1_ros2.git
 ```
 
-At the current stage, we rely on [gitmodules](https://git-scm.com/docs/gitmodules) to fetch external dependencies for the project, particularly to build the hardware interface; we plan to remove such dependency, but in the meantime make sure to fetch them by calling the proper command:
-``` bash
-cd ~/ros2_ws/src/z1_ros2
-git submodule init
-```
-
-Finally, you shall be able to build the workspace:
+Then, it is simply necessary to build the workspace:
 ``` bash
 cd ~/ros2_ws
 colcon build

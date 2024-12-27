@@ -1,6 +1,0 @@
-[submodule "unitree_z1_sdk"]
-	path = z1_hardware_interface/unitree_z1_sdk
-	url = https://github.com/unitreerobotics/z1_sdk.git
-[submodule "unitree_z1_controller"]
-	path = z1_hardware_interface/unitree_z1_controller
-	url = https://github.com/unitreerobotics/z1_controller.git
