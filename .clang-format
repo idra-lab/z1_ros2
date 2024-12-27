@@ -21,15 +21,18 @@ AllowAllParametersOfDeclarationOnNextLine: True
 AllowShortBlocksOnASingleLine: Always
 AllowShortCaseLabelsOnASingleLine: False
 AllowShortEnumsOnASingleLine: False
-AllowShortFunctionsOnASingleLine: All
+AllowShortFunctionsOnASingleLine: InlineOnly
 AllowShortIfStatementsOnASingleLine: AllIfsAndElse
 AllowShortLambdasOnASingleLine: All
 AllowShortLoopsOnASingleLine: True
 AlwaysBreakBeforeMultilineStrings: True
 # AlwaysBreakTemplateDeclarations: True
+AlwaysBreakAfterDefinitionReturnType: All
+# BreakAfterReturnType: ExceptShortType
 BinPackArguments: False
 BinPackParameters: False
 BreakBeforeBraces: Attach
+BreakBeforeBinaryOperators: NonAssignment
 BreakConstructorInitializers: AfterColon
 BreakInheritanceList: AfterComma
 BreakStringLiterals: True
@@ -44,7 +47,7 @@ FixNamespaceComments: True
 IncludeBlocks: Regroup
 IndentCaseBlocks: True
 IndentCaseLabels: True
-NamespaceIndentation: All
+NamespaceIndentation: Inner
 SortIncludes: CaseInsensitive
 SeparateDefinitionBlocks: Always
 EmptyLineBeforeAccessModifier: LogicalBlock
