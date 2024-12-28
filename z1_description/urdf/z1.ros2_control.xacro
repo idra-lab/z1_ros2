@@ -3,11 +3,13 @@
 <!-- This file is based on ur.ros2_contro.xacro provided by Universal Robots for     -->
 <!-- their robots, but with data ported for the Z1 manipulator from alientree.       -->
 <!-- Source to the original file:                                                    -->
-<!-- https://github.com/UniversalRobots/Universal_Robots_ROS2_Description/blob/rolling/urdf/ur.ros2_control.xacro -->
+<!--
+https://github.com/UniversalRobots/Universal_Robots_ROS2_Description/blob/rolling/urdf/ur.ros2_control.xacro -->
 
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
 
-    <xacro:macro name="z1_ros2_control" params="
+    <xacro:macro name="z1_ros2_control"
+        params="
         name:='z1'
         sim_ignition:=true
         prefix:=''
@@ -17,13 +19,15 @@
         <ros2_control name="${name}" type="system">
 
             <hardware>
+                <!-- <xacro:if value="${coppelia}">
+                    <plugin>z1_coppelia_hw/Z1EffortFakeHardware</plugin>
+                </xacro:if> -->
                 <xacro:if value="${sim_ignition}">
                     <plugin>ign_ros2_control/IgnitionSystem</plugin>
                 </xacro:if>
                 <xacro:unless value="${sim_ignition}">
                     <plugin>z1_hw_interface/Z1HwInterface</plugin>
                     <param name="gripper">${with_gripper}</param>
-                    <!-- add other necessary parameters here -->
                 </xacro:unless>
             </hardware>
 
@@ -36,9 +40,9 @@
                     <param name="min"> -${torqueMax} </param>
                     <param name="max"> ${torqueMax} </param>
                 </command_interface>
-                <state_interface name="position"/>
-                <state_interface name="velocity"/>
-                <state_interface name="effort"/>
+                <state_interface name="position" />
+                <state_interface name="velocity" />
+                <state_interface name="effort" />
             </joint>
 
             <joint name="joint2">
@@ -46,13 +50,22 @@
                     <param name="min"> ${joint2_PositionMin} </param>
                     <param name="max"> ${joint2_PositionMax} </param>
                 </command_interface>
-                <command_interface name="effort">
+                <command_interface
+                    name="effort">
                     <param name="min"> -${torqueMax} </param>
                     <param name="max"> ${torqueMax} </param>
                 </command_interface>
-                <state_interface name="position"/>
-                <state_interface name="velocity"/>
-                <state_interface name="effort"/>
+                <xacro:if value="${sim_ignition}">
+                    <!-- setting initial position in gazebo -->
+                    <state_interface name="position">
+                        <param name="initial_value">1.57</param>
+                    </state_interface>
+                </xacro:if>
+                <xacro:unless value="${sim_ignition}">
+                    <state_interface name="position" />
+                </xacro:unless>
+                <state_interface name="velocity" />
+                <state_interface name="effort" />
             </joint>
 
             <joint name="joint3">
@@ -64,9 +77,17 @@
                     <param name="min"> -${torqueMax} </param>
                     <param name="max"> ${torqueMax} </param>
                 </command_interface>
-                <state_interface name="position"/>
-                <state_interface name="velocity"/>
-                <state_interface name="effort"/>
+                <xacro:if value="${sim_ignition}">
+                    <!-- setting initial position in gazebo -->
+                    <state_interface name="position">
+                        <param name="initial_value">-1.57</param>
+                    </state_interface>
+                </xacro:if>
+                <xacro:unless value="${sim_ignition}">
+                    <state_interface name="position" />
+                </xacro:unless>
+                <state_interface name="velocity" />
+                <state_interface name="effort" />
             </joint>
 
             <joint name="joint4">
@@ -78,9 +99,9 @@
                     <param name="min"> -${torqueMax} </param>
                     <param name="max"> ${torqueMax} </param>
                 </command_interface>
-                <state_interface name="position"/>
-                <state_interface name="velocity"/>
-                <state_interface name="effort"/>
+                <state_interface name="position" />
+                <state_interface name="velocity" />
+                <state_interface name="effort" />
             </joint>
 
             <joint name="joint5">
@@ -92,9 +113,9 @@
                     <param name="min"> -${torqueMax} </param>
                     <param name="max"> ${torqueMax} </param>
                 </command_interface>
-                <state_interface name="position"/>
-                <state_interface name="velocity"/>
-                <state_interface name="effort"/>
+                <state_interface name="position" />
+                <state_interface name="velocity" />
+                <state_interface name="effort" />
             </joint>
 
             <joint name="joint6">
@@ -106,9 +127,9 @@
                     <param name="min"> -${torqueMax} </param>
                     <param name="max"> ${torqueMax} </param>
                 </command_interface>
-                <state_interface name="position"/>
-                <state_interface name="velocity"/>
-                <state_interface name="effort"/>
+                <state_interface name="position" />
+                <state_interface name="velocity" />
+                <state_interface name="effort" />
             </joint>
 
 
@@ -122,9 +143,9 @@
                         <param name="min"> -${torqueMax} </param>
                         <param name="max"> ${torqueMax} </param>
                     </command_interface>
-                    <state_interface name="position"/>
-                    <state_interface name="velocity"/>
-                    <state_interface name="effort"/>
+                    <state_interface name="position" />
+                    <state_interface name="velocity" />
+                    <state_interface name="effort" />
                 </joint>
             </xacro:if>
 
