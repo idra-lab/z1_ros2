@@ -10,10 +10,10 @@
     <xacro:arg name="with_gripper" default="true" />
 
     <xacro:include filename="$(find z1_description)/urdf/const.xacro" />
-    <!-- <xacro:include filename="$(find z1_description)/urdf/gazebo.xacro"/> -->
     <xacro:include filename="$(find z1_description)/urdf/z1.ros2_control.xacro" />
-    <xacro:include filename="$(find z1_description)/urdf/transmission.xacro" />
-
+    <material name="Grey">
+        <color rgba="0.3 0.3 0.3 1.0" />
+    </material>
 
     <link name="world" />
 
@@ -29,6 +29,7 @@
             <geometry>
                 <mesh filename="package://z1_description/meshes/visual/z1_Link00.dae" scale="1 1 1" />
             </geometry>
+            <material name="Grey" />
         </visual>
         <collision>
             <geometry>
@@ -63,6 +64,7 @@
             <geometry>
                 <mesh filename="package://z1_description/meshes/visual/z1_Link01.dae" scale="1 1 1" />
             </geometry>
+            <material name="Grey" />
         </visual>
         <collision>
             <geometry>
@@ -96,6 +98,7 @@
             <geometry>
                 <mesh filename="package://z1_description/meshes/visual/z1_Link02.dae" scale="1 1 1" />
             </geometry>
+            <material name="Grey" />
         </visual>
         <collision>
             <geometry>
@@ -129,6 +132,7 @@
             <geometry>
                 <mesh filename="package://z1_description/meshes/visual/z1_Link03.dae" scale="1 1 1" />
             </geometry>
+            <material name="Grey" />
         </visual>
         <collision>
             <geometry>
@@ -162,6 +166,7 @@
             <geometry>
                 <mesh filename="package://z1_description/meshes/visual/z1_Link04.dae" scale="1 1 1" />
             </geometry>
+            <material name="Grey" />
         </visual>
         <collision>
             <geometry>
@@ -195,6 +200,7 @@
             <geometry>
                 <mesh filename="package://z1_description/meshes/visual/z1_Link05.dae" scale="1 1 1" />
             </geometry>
+            <material name="Grey" />
         </visual>
         <collision>
             <geometry>
@@ -228,6 +234,7 @@
             <geometry>
                 <mesh filename="package://z1_description/meshes/visual/z1_Link06.dae" scale="1 1 1" />
             </geometry>
+            <material name="Grey" />
         </visual>
         <collision>
             <geometry>
@@ -258,6 +265,7 @@
                     <mesh filename="package://z1_description/meshes/visual/z1_GripperStator.dae"
                         scale="1 1 1" />
                 </geometry>
+                <material name="Grey" />
             </visual>
             <collision>
                 <geometry>
@@ -292,6 +300,7 @@
                     <mesh filename="package://z1_description/meshes/visual/z1_GripperMover.dae"
                         scale="1 1 1" />
                 </geometry>
+                <material name="Grey" />
             </visual>
             <collision>
                 <geometry>
