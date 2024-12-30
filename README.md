@@ -1,37 +1,42 @@
-# Unitree Z1 Hardware Interface
+# Unitree Z1 ROS2 package
 
-This package is an attempt to create the hardware interface for the
-[Z1 manipulator](https://shop.unitree.com/products/unitree-z1) from Unitree.
-The idea is to use their [SDK](https://github.com/unitreerobotics/z1_sdk) to create a
-proper hardware interface for the [ROS2 control](https://control.ros.org/master/index.html)
-library.
-
-## Robot Description
-
-The repository contains also the URDF file of the Z1 manipulator that has been adapted
-to properly work in the ROS2 framework. Source of the original URDF files, as well as
-of the meshes, can be found [here](https://github.com/unitreerobotics/unitree_ros/tree/master).
-
-Such files have been however modified to work with the
-[ROS2 control](https://control.ros.org/master/index.html) hardware interface.
-URDFs have been modified using as reference the official
-[ur_description](https://github.com/UniversalRobots/Universal_Robots_ROS2_Description)
-package from Universal Robots, which has been extensively tested in our lab. and its
-effectiveness is proven.
-
-Furthermore, [launch](launch/) files are provided to ease the integration in other
-projects.
+This is a community-driven package that enable the [Z1 Manipulator](https://shop.unitree.com/products/unitree-z1) from [Unitree](https://www.unitree.com/) to work in ROS2.
 
 
-## SDK Integration
+## Installation
 
-This repository contains 2 external dependencies provided by Unitree: the
-[Z1 controller](https://github.com/unitreerobotics/z1_controller)
-and the [Z1 SDK](https://github.com/unitreerobotics/z1_sdk). The former is the one that's
-actually used to communicate with the robot and performs the actual control, while the
-latter provides the public interface to externally control the robot.
+To use this package in ROS2, first clone this repository in a ROS2 workspace, e.g.:
+``` bash
+mkdir -p ~/ros2_ws/src && cd ~/ros2_ws/src
+git clone https://github.com/idra-lab/z1_ros2.git
+```
 
-In this case, the [CMakeLists.txt](./CMakeLists.txt) builds the `z1_ctrl` application
-(from the Z1 controller package) while building the whole ROS2 workspace; the SDK is
-instead imported as dependency for the hardware interface (for both header file inclusion
-and dynamic library linking).
+At the current stage, we rely on [gitmodules](https://git-scm.com/docs/gitmodules) to fetch external dependencies for the project, particularly to build the hardware interface; we plan to remove such dependency, but in the meantime make sure to fetch them by calling the proper command:
+``` bash
+cd ~/ros2_ws/src/z1_ros2
+git submodule init
+```
+
+Finally, you shall be able to build the workspace:
+``` bash
+cd ~/ros2_ws
+colcon build
+```
+
+
+## ROS2 packages
+
+This repository contains different sub-packages:
+
+- `z1_description`: contains the URDFs for the Z1 robot, as well as its meshes;
+- `z1_bringup`: contains configuration and launch files for the Z1 manipulator;
+- `z1_hw_interface`: provides the [ROS2 control](https://control.ros.org/rolling/index.html) hardware interface for the Z1 manipulator.
+
+
+## Testing the robot
+
+To test the robot in the simulation environment, you can directly call the command
+```
+ros2 launch z1_bringup z1.launch.py sim_ignition:=true
+```
+More details on how to launch the robots can be found in the `z1_bringup` package [README](z1_bringup/README.md).
