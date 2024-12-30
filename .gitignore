@@ -7,7 +7,7 @@ _build/
 *.iml
 *.ipr
 *.iws
-
+file.urdf
 compile_commands.json
 
 include/unitree_z1_hw_interface/defines.hpp
