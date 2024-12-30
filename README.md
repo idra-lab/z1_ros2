@@ -40,3 +40,13 @@ To test the robot in the simulation environment, you can directly call the comma
 ros2 launch z1_bringup z1.launch.py sim_ignition:=true
 ```
 More details on how to launch the robots can be found in the `z1_bringup` package [README](z1_bringup/README.md).
+
+
+## Contributing
+
+Everyone is welcome to contribute to this repository. 
+
+If you want to improve something, or have some particular request, please first open an issue to disclose your idea with everyone.
+
+As general rule, please develop your feature/bug-fix on a new branch, and create a pull request targeting the **development branch** (`devel`).
+There we will make sure that the change is working as expected, and will update the reference of the `main` branch accordingly, to guarantee the stability of such branch.
