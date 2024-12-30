@@ -1,0 +1,27 @@
+name: Jazzy CI
+
+on:
+  push:
+    branches:
+      - "main"
+      - "devel"
+  pull_request:
+    branches:
+      - "devel"
+jobs:
+  industrial_ci:
+    strategy:
+      fail-fast: false
+      matrix:
+        env:
+          - {ROS_DISTRO: jazzy, ROS_REPO: testing}
+          - {ROS_DISTRO: jazzy, ROS_REPO: main}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository + submodules
+        uses: actions/checkout@v4
+        with:
+          submodules: 'true'
+      - name: Build repository
+        uses: 'ros-industrial/industrial_ci@master'
+        env: ${{matrix.env}}
