@@ -7,6 +7,7 @@ from launch.actions import (
     IncludeLaunchDescription,
     OpaqueFunction,
     RegisterEventHandler,
+    ExecuteProcess,
 )
 from launch.substitutions import LaunchConfiguration
 from launch.conditions import IfCondition, UnlessCondition
@@ -21,6 +22,8 @@ from ament_index_python.packages import (
 
 
 def launch_setup(context, *args, **kwargs):
+
+    nodes_to_start = list()
 
     xacro_file = LaunchConfiguration("xacro_file")
     robot_name = LaunchConfiguration("robot_name")
@@ -39,6 +42,12 @@ def launch_setup(context, *args, **kwargs):
     is_simulation = IfCondition(sim_ignition)
     is_real = UnlessCondition(sim_ignition)
 
+    #   ____
+    #  / ___|___  _ __ ___  _ __ ___   ___  _ __  ___
+    # | |   / _ \| '_ ` _ \| '_ ` _ \ / _ \| '_ \/ __|
+    # | |__| (_) | | | | | | | | | | | (_) | | | \__ \
+    #  \____\___/|_| |_| |_|_| |_| |_|\___/|_| |_|___/
+    #
     robot_description_content = xacro.process(
         xacro_file.perform(context),
         mappings={
@@ -58,21 +67,6 @@ def launch_setup(context, *args, **kwargs):
         parameters=[robot_description, {
             "use_sim_time": use_sim_time,
         }],
-    )
-
-    controller_manager_node = Node(
-        package="controller_manager",
-        executable="ros2_control_node",
-        parameters=[
-            robot_description, controller_config, {
-                "use_sim_time": use_sim_time
-            }
-        ],
-        remappings=[
-            ('motion_control_handle/target_frame', 'target_frame'),
-            ('cartesian_motion_controller/target_frame', 'target_frame'),
-        ],
-        condition=is_real,
     )
 
     joint_state_broadcaster_spawner = Node(
@@ -106,7 +100,63 @@ def launch_setup(context, *args, **kwargs):
         condition=IfCondition(rviz),
     )
 
-    # Ignition nodes
+    rviz_delayed = RegisterEventHandler(
+        event_handler=OnProcessExit(
+            target_action=joint_state_broadcaster_spawner,
+            on_exit=[rviz_node],
+        )
+    )
+
+    nodes_to_start += [
+        robot_state_publisher_node,
+        joint_state_broadcaster_spawner,
+        starting_controller_spawner,
+        rviz_delayed,
+    ]
+
+    #  ____            _   ____       _           _
+    # |  _ \ ___  __ _| | |  _ \ ___ | |__   ___ | |_
+    # | |_) / _ \/ _` | | | |_) / _ \| '_ \ / _ \| __|
+    # |  _ <  __/ (_| | | |  _ < (_) | |_) | (_) | |_
+    # |_| \_\___|\__,_|_| |_| \_\___/|_.__/ \___/ \__|
+    #
+    controller_manager_node = Node(
+        package="controller_manager",
+        executable="ros2_control_node",
+        parameters=[
+            robot_description, controller_config, {
+                "use_sim_time": use_sim_time
+            }
+        ],
+        remappings=[
+            ('motion_control_handle/target_frame', 'target_frame'),
+            ('cartesian_motion_controller/target_frame', 'target_frame'),
+        ],
+        condition=is_real,
+    )
+
+    z1_controller_path = os.path.join(
+        get_package_share_path("z1_hardware_interface"), "controller"
+    )
+    z1_controller_executable = os.path.join(z1_controller_path, "z1_ctrl")
+    z1_controller_process = ExecuteProcess(
+        cmd=[z1_controller_executable],
+        cwd=z1_controller_path,
+        condition=is_real,
+        output="screen",
+    )
+
+    nodes_to_start += [
+        controller_manager_node,
+        z1_controller_process,
+    ]
+
+    #  ___            _ _   _
+    # |_ _|__ _ _ __ (_) |_(_) ___  _ __
+    #  | |/ _` | '_ \| | __| |/ _ \| '_ \
+    #  | | (_| | | | | | |_| | (_) | | | |
+    # |___\__, |_| |_|_|\__|_|\___/|_| |_|
+    #     |___/
     ignition_simulator_node = IncludeLaunchDescription(
         PythonLaunchDescriptionSource([
             FindPackageShare("ros_gz_sim"), "/launch/gz_sim.launch.py"
@@ -130,19 +180,7 @@ def launch_setup(context, *args, **kwargs):
         condition=IfCondition(sim_ignition),
     )
 
-    delay_rviz = RegisterEventHandler(
-        event_handler=OnProcessExit(
-            target_action=joint_state_broadcaster_spawner,
-            on_exit=[rviz_node],
-        )
-    )
-
-    nodes_to_start = [
-        robot_state_publisher_node,
-        controller_manager_node,
-        joint_state_broadcaster_spawner,
-        starting_controller_spawner,
-        delay_rviz,
+    nodes_to_start += [
         ignition_simulator_node,
         ignition_spawn_z1_node,
     ]

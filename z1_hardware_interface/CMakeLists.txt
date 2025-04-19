@@ -34,11 +34,7 @@ FetchContent_Declare(
     z1_controller
     URL https://github.com/unitreerobotics/z1_controller/archive/refs/heads/master.zip
 )
-FetchContent_GetProperties(z1_controller)
-if(NOT z1_controller_FOUND)
-    message(STATUS "z1_controller not found, fetching...")
-    FetchContent_Populate(z1_controller)
-endif()
+FetchContent_MakeAvailable(z1_controller)
 
 FetchContent_Declare(
     z1_sdk
@@ -142,18 +138,26 @@ install(
     RUNTIME DESTINATION bin
 )
 
-install(
-    FILES 
-    ${Z1_CONTROLLER_LIB}
-    ${Z1_SDK_LIB}
-    DESTINATION 
-    lib
-)
 
 install(
     DIRECTORY include
     DESTINATION include
 )
+
+# SDK and libraries
+install(
+    FILES       ${Z1_CONTROLLER_LIB} ${Z1_SDK_LIB}
+    DESTINATION lib
+)
+install(
+    FILES      ${CMAKE_CURRENT_BINARY_DIR}/z1_ctrl
+    DESTINATION share/${PROJECT_NAME}/controller
+)
+install(
+    DIRECTORY   config
+    DESTINATION share/${PROJECT_NAME}
+)
+
 ament_export_targets(export_${PROJECT_NAME} HAS_LIBRARY_TARGET)
 ament_export_dependencies(${ROS2_REQUIRED_COMPONENTS})
 

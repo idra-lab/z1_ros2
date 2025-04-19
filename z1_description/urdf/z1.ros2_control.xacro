@@ -27,7 +27,7 @@ https://github.com/UniversalRobots/Universal_Robots_ROS2_Description/blob/rollin
                     <plugin>ign_ros2_control/IgnitionSystem</plugin>
                 </xacro:if>
                 <xacro:unless value="${sim_ignition}">
-                    <plugin>z1_hw_interface/Z1HwInterface</plugin>
+                    <plugin>z1_hardware_interface/Z1HardwareInterface</plugin>
                     <param name="gripper">${with_gripper}</param>
                 </xacro:unless>
             </hardware>

@@ -1,0 +1,13 @@
+<configurartion>
+    <!-- lower computer communication -->
+    <IP>192.168.123.110</IP>
+    <Port>8881</Port>
+
+    <collision>
+        <open>N</open> <!-- Y or N -->
+        <limitT>10.0</limitT> <!-- N*M -->
+        <load>0.0</load><!-- kg-->
+    </collision>
+
+    <grasp_max_torque>10.0</grasp_max_torque>
+</configurartion>
