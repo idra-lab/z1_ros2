@@ -8,7 +8,8 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
-find_package(Eigen3 REQUIRED)
+find_package(Eigen3   REQUIRED)
+find_package(fmt      REQUIRED)
 set(ROS2_REQUIRED_COMPONENTS
     ament_cmake
     hardware_interface
@@ -101,10 +102,11 @@ target_include_directories(
     $<INSTALL_INTERFACE:include/${PROJECT_NAME}>
 )
 target_link_libraries(
-    ${PROJECT_NAME} PRIVATE
+    ${PROJECT_NAME} 
+    PRIVATE
     Eigen3::Eigen
-    unitree::z1_controller
     unitree::z1_sdk
+    fmt::fmt
 )
 ament_target_dependencies(
     ${PROJECT_NAME}
