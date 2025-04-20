@@ -105,8 +105,10 @@ target_link_libraries(
     ${PROJECT_NAME} 
     PRIVATE
     Eigen3::Eigen
-    unitree::z1_sdk
     fmt::fmt
+    PUBLIC
+    unitree::z1_sdk
+    ${Z1_SDK_LIB}
 )
 ament_target_dependencies(
     ${PROJECT_NAME}
