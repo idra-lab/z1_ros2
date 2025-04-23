@@ -52,7 +52,6 @@ HardwareInterface::on_configure(const rclcpp_lifecycle::State& prev_state) {
     logger.set_level(rclcpp::Logger::Level::Debug);
 #endif
 
-
     if (with_gripper()) RCLCPP_INFO(get_logger(), "Gripper is enabled");
     else RCLCPP_INFO(get_logger(), "Gripper is disabled");
 
@@ -78,7 +77,6 @@ HardwareInterface::on_configure(const rclcpp_lifecycle::State& prev_state) {
     RCLCPP_INFO(get_logger(), "Position-proportional gains: %s", pretty_vector(_default_gains.kp).c_str());
     RCLCPP_INFO(get_logger(), "Velocity-proportional gains: %s", pretty_vector(_default_gains.kd).c_str());
     // clang-format on
-
 
     // Set command to current state
     _arm_cmd.q      = _arm_state.q;
@@ -113,6 +111,10 @@ HardwareInterface::on_shutdown(const rclcpp_lifecycle::State& prev_state) {
         != hardware_interface::CallbackReturn::SUCCESS) {
         RCLCPP_ERROR(get_logger(), "parent on_shutdown() failed");
     }
+    RCLCPP_INFO(get_logger(), "Going back to start");
+    _arm->backToStart();
+    RCLCPP_INFO(get_logger(), "Setting arm into passive state");
+    _arm->setFsm(UNITREE_ARM::ArmFSMState::PASSIVE);
     RCLCPP_INFO(get_logger(), "Closing SDK connection");
     _arm->sendRecvThread->shutdown();
     RCLCPP_DEBUG(get_logger(), "on_shutdown() completed successfully");
@@ -283,6 +285,13 @@ HardwareInterface::perform_command_mode_switch(
 
     _arm->lowcmd->setControlGain(_current_gains.kp, _current_gains.kd);
     _arm->lowcmd->setGripperGain(_current_gains.kp[6], _current_gains.kd[6]);
+
+    // Set command to current state
+    _arm_cmd.q      = _arm_state.q;
+    _arm_cmd.qd     = _arm_state.qd;
+    _gripper_cmd.q  = _gripper_state.q;
+    _gripper_cmd.qd = _gripper_state.qd;
+
     return hardware_interface::return_type::OK;
 }
 

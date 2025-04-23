@@ -95,7 +95,7 @@ def launch_setup(context, *args, **kwargs):
         output="screen",
         arguments=[
             "-d",
-            os.path.join(get_package_share_path("z1_description"), "rviz", "z1.rviz")
+            os.path.join(get_package_share_path("z1_bringup"), "rviz", "z1.rviz")
         ],
         condition=IfCondition(rviz),
     )
