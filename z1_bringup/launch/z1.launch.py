@@ -135,13 +135,14 @@ def launch_setup(context, *args, **kwargs):
         condition=is_real,
     )
 
-    z1_controller_path = os.path.join(
-        get_package_share_path("z1_hardware_interface"), "controller"
+    z1_controller_script_path = os.path.join(
+        get_package_share_path("z1_hardware_interface"),
+        "scripts",
+        "z1_controller_process.py"
     )
-    z1_controller_executable = os.path.join(z1_controller_path, "z1_ctrl")
+    print(z1_controller_script_path)
     z1_controller_process = ExecuteProcess(
-        cmd=[z1_controller_executable],
-        cwd=z1_controller_path,
+        cmd=["python3", z1_controller_script_path],
         condition=is_real,
         output="screen",
     )

@@ -12,6 +12,7 @@
   <depend> hardware_interface </depend>
   <depend> pluginlib </depend>
   <depend> rclcpp </depend>
+  <depend> ament_index_python </depend>
 
   <build_depend>fmt</build_depend>
 

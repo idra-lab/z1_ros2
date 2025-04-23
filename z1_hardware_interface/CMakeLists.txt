@@ -158,7 +158,7 @@ install(
     DESTINATION share/${PROJECT_NAME}/controller
 )
 install(
-    DIRECTORY   config
+    DIRECTORY   config scripts
     DESTINATION share/${PROJECT_NAME}
 )
 
