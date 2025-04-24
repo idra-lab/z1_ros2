@@ -1,20 +1,29 @@
 # Z1 Hardware Interface
 
-This package contains the hardware interface for the Unitree Z1 robot.
-
-### 🚧⚠️ Warning ️⚠️🚧
-
-The hardware interface is not yet finalised, thus it is **not functional**. Due to problem with the robot on our laboratory, we cannot guarantee the delivery of the final hardware interface.
-
-## Working principle
-
-This package internally fetches 2 unitree libraries:
+This package contains the hardware interface for the Unitree Z1 robot by leveraging the Unitree provided packages:
 
 - [`z1_controller`](https://github.com/unitreerobotics/z1_controller):
-  this is used to directly communicate with the robot at a lower level;
+  for the direct communication with the robot at a lower level;
 - [`z1_sdk`](https://github.com/unitreerobotics/z1_sdk): 
-  provides a simplified interface to communicate with the robot and enables to send commands.
+  to access `z1_controller` from the ROS2 hardware interface and send commands to the manipulator.
 
-Currently, the hardare interface spawns two entities: a `z1_controller` to access the robot, and a `z1_sdk` component that directly interfaces with the robot.
+## First Startup and network configuration
 
-As future work, we might envision to drop the dependency on `z1_sdk` if we can find a more effective way to set the control inputs to the robot via the APIs provided by `z1_controller`.
+Prior the starting of the communication with the robot though ROS2, make sure you followed the [official instructions](https://support.unitree.com/home/en/Z1_developer/poweron) before powering the robot.
+
+There, they also show how to correctly setup the local network to ensure the communication with the robot that, by default, has IP address `192.168.123.110`. 
+In short, make sure the network port where the robot is connected into is configured with manual IPv4 address and the following parameters:
+
+- address: `192.168.123.235`;
+- netmask: `255.255.255.0`;
+- gateway: `192.168.123.1`.
+
+## `z1_controller`
+
+This package builds the official `z1_controller` package, but also install accordingly the executables and the configuration files.
+For simplicity and ease of modification, the `z1_controller`s [configuration folder](https://github.com/unitreerobotics/z1_controller/tree/master/config) has been copied at [`config/`](./config).
+You may refer to the [official website documentation](https://support.unitree.com/home/en/Z1_developer/sdk_intro) to correctly configure the [`config.xml`](./config/config.xml) file, even though the standard values are good defaults.
+
+## Hardware interface
+
+This package implementes a [ROS2 control hardware interface](https://control.ros.org/rolling/doc/ros2_control/hardware_interface/doc/hardware_components_userdoc.html) by using the `z1_sdk` library to send low-level command to the robot and read its state.
