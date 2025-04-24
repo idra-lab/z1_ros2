@@ -7,7 +7,9 @@ This package contains the hardware interface for the Unitree Z1 robot by leverag
 - [`z1_sdk`](https://github.com/unitreerobotics/z1_sdk): 
   to access `z1_controller` from the ROS2 hardware interface and send commands to the manipulator.
 
-## First Startup and network configuration
+In particular, the hardware interface is capable of exposing all command interfaces, namely: `position`, `velocity`, and `effort` (torque).
+
+## First startup and network configuration
 
 Prior the starting of the communication with the robot though ROS2, make sure you followed the [official instructions](https://support.unitree.com/home/en/Z1_developer/poweron) before powering the robot.
 

@@ -24,6 +24,7 @@ Make sure that you sourced the ROS2 global workspace (`source /opt/ros/humble/se
 cd ~/ros2_ws
 colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release
 ```
+Finally, make sure to source also the built workspace (`source ~/ros2_ws/install/setup.bash`).
 
 
 ## ROS2 packages
@@ -33,21 +34,40 @@ This repository contains different sub-packages:
 - [`z1_description`](z1_description/README.md): contains the URDFs for the Z1 robot, as well as its meshes;
 - [`z1_bringup`](z1_bringup/README.md): contains configuration and launch files for the Z1 manipulator;
 - [`z1_hardware_interface`](z1_hardware_interface/README.md): provides the [ROS2 control](https://control.ros.org/rolling/index.html) hardware interface for the Z1 manipulator;
+- [`z1_examples`](z1_examples/README.md): contains some simple scripts to test and validate the functionalities of the robot;
 
-## Testing the robot
 
-To test the robot in the simulation environment, you can simply call the launch file provided by the `z1_bringup` package as follows:
-```
-ros2 launch z1_bringup z1.launch.py
-```
-The default option of `sim_ignition:=true` starts, by default, the ignition simulator. 
-But switching to the communication with the real robot is easy, as it is simply necessary to set such variable to `false` as follows:
-```
-ros2 launch z1_bringup z1.launch.py sim_ignition:=false
-```
+For more information for each package, please refer to the corresponding `README`.
 
-More details on all launch file parameters can be found in the `z1_bringup` package [README](z1_bringup/README.md).
-If you plan connecting you application to the physical hardware, make sure also to check out the `z1_hardware_interface` package [README](z1_hardware_interface/README.md).
+
+## Robot in action
+
+To get started with the Z1 manipulator in the simulation environment, you may call
+```
+ros2 launch z1_bringup z1.launch.py starting_controller:=joint_trajectory_controller
+```
+This make sure to launch the robot with the [`joint_trajectory_controller`](https://control.ros.org/rolling/doc/ros2_controllers/joint_trajectory_controller/doc/userdoc.html), which provide a simple motion planning facility. 
+
+To test the proper functionality, we can use the [`waypoint_test.py`](./z1_examples/z1_examples/waypoint_test.py) script to send a default plan as follows:
+```
+ros2 run z1_examples waypoint_test.py
+```
+The outcome of the simulation shall be the following:
+
+![](/docs/resources/gazebo-waypoint-example.gif)
+
+By using the same bringup launch file, it becomes really easy to transition from the simulation environment to the connection with the real robot. It is necessary to launch
+```
+ros2 launch z1_bringup z1.launch.py starting_controller:=joint_trajectory_controller sim_ignition:=false
+```
+alongside with the `waypoint_test.py` executable, and the hardware interface which connects to the real robot is loaded over the simulator interface, and the robot performs the same motion.
+
+![](/docs/resources/robot-waypoint-example.gif)
+
+**Note:** this example uses the `position` command interface for the robot (as specified in the [configuration file](z1_bringup/config/z1_controllers.yaml) for the `joint_trajectory_controller`), and you may have some trouble replicating the simulation on your machine.
+As mentioned in [this issue](https://github.com/idra-lab/z1_ros2/issues/8), a temporary fix is to delete all appearences of the `effort` command interface from the [`z1.ros2_control.xacro`](./z1_description/urdf/z1.ros2_control.xacro). 
+Note that this is a problem of the ROS2 control plugin for Ignition, and not some misconfiguration of this package; the connection with the hardware does not suffer this problem.
+A better fix to deleting parts from the URDF is planned but not implemented yet.
 
 
 ## Contributing
