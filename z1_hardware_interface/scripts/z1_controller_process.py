@@ -8,7 +8,7 @@ from ament_index_python import get_package_share_directory
 
 share_dir = get_package_share_directory("z1_hardware_interface")
 work_dir = os.path.join(share_dir, "controller")
-delay_secs = 8
+delay_secs = 4
 
 proc = subprocess.Popen(["./z1_ctrl"], cwd=work_dir)
 

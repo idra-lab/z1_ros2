@@ -13,6 +13,7 @@
   <depend> pluginlib </depend>
   <depend> rclcpp </depend>
   <depend> ament_index_python </depend>
+  <depend> eigen </depend>
 
   <build_depend>fmt</build_depend>
 
