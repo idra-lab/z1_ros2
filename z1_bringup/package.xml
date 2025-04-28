@@ -3,9 +3,9 @@
 <package format="3">
   <name>z1_bringup</name>
   <version>0.0.0</version>
-  <description>TODO: Package description</description>
-  <maintainer email="matteo.dallevedove@unitn.it">Matteo Dalle Vedove</maintainer>
-  <license>TODO: License declaration</license>
+  <description>Common launch files and configuration for the Unitree Z1 manipulator</description>
+  <maintainer email="matteodv99tn@gmail.com">Matteo Dalle Vedove</maintainer>
+  <license>Apache License 2.0</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 

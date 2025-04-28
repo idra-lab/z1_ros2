@@ -3,9 +3,9 @@
 <package format="3">
   <name>z1_hardware_interface</name>
   <version>0.0.0</version>
-  <description>TODO: Package description</description>
-  <maintainer email="matteodv99tn@gmail.com">matteo</maintainer>
-  <license>TODO: License declaration</license>
+  <description>ROS2 control hardware interface for the Unitree Z1 manipulator</description>
+  <maintainer email="matteodv99tn@gmail.com">Matteo Dalle Vedove</maintainer>
+  <license>Apache License 2.0</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 
