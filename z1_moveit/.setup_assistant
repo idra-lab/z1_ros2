@@ -5,6 +5,21 @@ moveit_setup_assistant_config:
   srdf:
     relative_path: config/z1_description.srdf
   package_settings:
-    author_name: 12
+    author_name: 123
     author_email: 123@qq.com
-    generated_timestamp: 1745755586
+    generated_timestamp: 1745936006
+  control_xacro:
+    command:
+      - position
+    state:
+      - position
+      - velocity
+  modified_urdf:
+    xacros:
+      - control_xacro
+  control_xacro:
+    command:
+      - position
+    state:
+      - position
+      - velocity
