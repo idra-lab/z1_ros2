@@ -7,19 +7,4 @@ moveit_setup_assistant_config:
   package_settings:
     author_name: 123
     author_email: 123@qq.com
-    generated_timestamp: 1745936006
-  control_xacro:
-    command:
-      - position
-    state:
-      - position
-      - velocity
-  modified_urdf:
-    xacros:
-      - control_xacro
-  control_xacro:
-    command:
-      - position
-    state:
-      - position
-      - velocity
+    generated_timestamp: 1746290676
