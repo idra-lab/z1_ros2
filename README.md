@@ -34,6 +34,7 @@ This repository contains different sub-packages:
 - [`z1_description`](z1_description/README.md): contains the URDFs for the Z1 robot, as well as its meshes;
 - [`z1_bringup`](z1_bringup/README.md): contains configuration and launch files for the Z1 manipulator;
 - [`z1_hardware_interface`](z1_hardware_interface/README.md): provides the [ROS2 control](https://control.ros.org/rolling/index.html) hardware interface for the Z1 manipulator;
+- [`z1_moveit`](z1_moveit/README.md): [MoveIt!](https://moveit.ai/) integration for the Z1 manipulator;
 - [`z1_examples`](z1_examples/README.md): contains some simple scripts to test and validate the functionalities of the robot;
 
 
