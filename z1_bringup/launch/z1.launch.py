@@ -44,6 +44,7 @@ def launch_setup(context, *args, **kwargs):
     robot_name = LaunchConfiguration("robot_name")
     with_gripper = LaunchConfiguration("with_gripper")
     rviz = LaunchConfiguration("rviz")
+    rviz_config = LaunchConfiguration("rviz_config")
     controller_config = LaunchConfiguration("controller_config")
     starting_controller = LaunchConfiguration("starting_controller")
     sim_ignition = LaunchConfiguration("sim_ignition")
@@ -108,9 +109,7 @@ def launch_setup(context, *args, **kwargs):
         package="rviz2",
         executable="rviz2",
         output="screen",
-        arguments=[
-            "-d", os.path.join(get_package_share_path("z1_bringup"), "rviz", "z1.rviz")
-        ],
+        arguments=["-d", rviz_config.perform(context)],
         condition=IfCondition(rviz),
     )
 
@@ -207,7 +206,7 @@ def generate_launch_description():
     declared_arguments = []
 
     rviz_config_default = os.path.join(
-        get_package_prefix("z1_bringup"), "rviz", "z1.rviz"
+        get_package_share_path("z1_bringup"), "rviz", "z1.rviz"
     )
     xacro_file_default = os.path.join(
         get_package_share_path("z1_description"), "urdf", "z1.urdf.xacro"

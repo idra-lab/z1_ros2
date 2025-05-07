@@ -1,0 +1,10 @@
+moveit_setup_assistant_config:
+  urdf:
+    package: z1_description
+    relative_path: urdf/z1.urdf.xacro
+  srdf:
+    relative_path: config/z1_description.srdf
+  package_settings:
+    author_name: 123
+    author_email: 123@qq.com
+    generated_timestamp: 1746290676
