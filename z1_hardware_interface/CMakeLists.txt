@@ -150,11 +150,11 @@ install(
 
 # SDK and libraries
 install(
-    FILES       ${Z1_CONTROLLER_LIB} ${Z1_SDK_LIB}
+    PROGRAMS    ${Z1_CONTROLLER_LIB} ${Z1_SDK_LIB}
     DESTINATION lib
 )
 install(
-    FILES      ${CMAKE_CURRENT_BINARY_DIR}/z1_ctrl
+    PROGRAMS    ${CMAKE_CURRENT_BINARY_DIR}/z1_ctrl
     DESTINATION share/${PROJECT_NAME}/controller
 )
 install(
