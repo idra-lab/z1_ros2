@@ -38,7 +38,7 @@ def launch_setup(context, *args, **kwargs):
             FindPackageShare("z1_bringup"), "/launch/z1.launch.py"
         ], ),
         launch_arguments={
-            "sim_ingition": sim_ignition,
+            "sim_ignition": sim_ignition,
             "starting_controller": "joint_trajectory_controller",
         }.items(),
     )
